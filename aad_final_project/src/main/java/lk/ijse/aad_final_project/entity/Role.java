@@ -1,6 +1,7 @@
 package lk.ijse.aad_final_project.entity;
 
 import jakarta.persistence.*;
+import lk.ijse.aad_final_project.enums.RoleName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,8 +20,9 @@ public class Role {
     @Column(name = "role_id")
     private Long roleId;
 
-    @Column(name = "role_name", nullable = false, unique = true, length = 50)
-    private String roleName;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role_name", nullable = false, unique = true)
+    private RoleName roleName;
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<User> users;

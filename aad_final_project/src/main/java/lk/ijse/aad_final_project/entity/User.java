@@ -1,6 +1,7 @@
 package lk.ijse.aad_final_project.entity;
 
 import jakarta.persistence.*;
+import lk.ijse.aad_final_project.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,8 +36,9 @@ public class User {
     @Column(name = "phone", length = 15)
     private String phone;
 
-    @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private UserStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
