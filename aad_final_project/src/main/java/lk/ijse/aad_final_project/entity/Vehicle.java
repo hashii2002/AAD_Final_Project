@@ -3,7 +3,6 @@ package lk.ijse.aad_final_project.entity;
 import jakarta.persistence.*;
 import lk.ijse.aad_final_project.enums.VehicleStatus;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
 public class Vehicle {
 
     @Id
@@ -44,6 +42,5 @@ public class Vehicle {
     private VehicleCategory category;
 
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
     private List<VehicleDocument> documents = new ArrayList<>();
 }

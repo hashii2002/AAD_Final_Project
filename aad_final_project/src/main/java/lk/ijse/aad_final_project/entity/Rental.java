@@ -3,7 +3,6 @@ package lk.ijse.aad_final_project.entity;
 import jakarta.persistence.*;
 import lk.ijse.aad_final_project.enums.RentalStatus;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
 public class Rental {
 
     @Id
@@ -61,18 +59,15 @@ public class Rental {
     private RentalRate rentalRate;
 
     @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
     private List<Payment> payments = new ArrayList<>();
 
     @OneToOne(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Invoice invoice;
 
     @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
     private List<RentalDriver> rentalDrivers = new ArrayList<>();
 
     @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
     private List<VehicleInspection> inspections = new ArrayList<>();
 
     @OneToOne(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

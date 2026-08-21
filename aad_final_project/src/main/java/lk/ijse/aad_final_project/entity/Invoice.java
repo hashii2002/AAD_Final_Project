@@ -3,7 +3,6 @@ package lk.ijse.aad_final_project.entity;
 import jakarta.persistence.*;
 import lk.ijse.aad_final_project.enums.InvoiceStatus;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +12,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
 public class Invoice {
 
     @Id
@@ -28,14 +26,12 @@ public class Invoice {
     private Double subTotal;
 
     @Column(name = "discount", nullable = false)
-    @Builder.Default
     private Double discount = 0.0;
 
     @Column(name = "total_amount", nullable = false)
     private Double totalAmount;
 
     @Column(name = "balance", nullable = false)
-    @Builder.Default
     private Double balance = 0.0;
 
     @Enumerated(EnumType.STRING)

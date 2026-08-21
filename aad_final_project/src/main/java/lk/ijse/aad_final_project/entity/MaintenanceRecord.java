@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lk.ijse.aad_final_project.enums.MaintenanceStatus;
 import lk.ijse.aad_final_project.enums.MaintenanceType;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +13,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
 public class MaintenanceRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

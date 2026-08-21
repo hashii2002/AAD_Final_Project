@@ -2,9 +2,7 @@ package lk.ijse.aad_final_project.entity;
 
 import jakarta.persistence.*;
 import lk.ijse.aad_final_project.enums.Country;
-import lk.ijse.aad_final_project.enums.DriverStatus;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,7 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
 public class VehicleBrand {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lk.ijse.aad_final_project.enums.PaymentMethod;
 import lk.ijse.aad_final_project.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
 public class Payment {
 
     @Id
@@ -29,11 +27,9 @@ public class Payment {
     private Double amount;
 
     @Column(name = "discount", nullable = false)
-    @Builder.Default
     private Double discount = 0.0;
 
     @Column(name = "balance", nullable = false)
-    @Builder.Default
     private Double balance = 0.0;
 
     @Column(name = "payment_date", nullable = false)

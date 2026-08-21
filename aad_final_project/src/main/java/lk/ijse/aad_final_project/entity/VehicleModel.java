@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lk.ijse.aad_final_project.enums.FuelType;
 import lk.ijse.aad_final_project.enums.TransmissionType;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
 public class VehicleModel {
 
     @Id
@@ -42,6 +40,5 @@ public class VehicleModel {
     private VehicleBrand brand;
 
     @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
     private List<Vehicle> vehicles = new ArrayList<>();
 }
