@@ -6,7 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lk.ijse.aad_final_project.dto.UserDataDTO;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.internal.Function;
+import java.util.function.Function;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -25,10 +25,12 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private Long expiration;
 
-    public String generateToken(UserDataDTO userDataDTO, String username) {
+    public String generateToken(UserDataDTO userDataDTO) {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userDataDTO.getUserId());
+        claims.put("username", userDataDTO.getUsername());
+        claims.put("role", userDataDTO.getRole());
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -37,11 +39,6 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
-    }
-
-    public String extractUserId(String token) {
-
-        return extractClaim(token, Claims::getSubject);
     }
 
     public String extractUsername(String token) {
@@ -56,7 +53,6 @@ public class JwtUtil {
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
 
         Claims claims = extractAllClaims(token);
-
         return claimsResolver.apply(claims);
     }
 
