@@ -122,4 +122,26 @@ public class CustomerServiceImpl implements CustomerService {
 
         customerRepository.deleteById(customerId);
     }
+
+
+    @Override
+    public CustomerDTO getCustomerByUserId(Long userId) {
+        Optional<Customer> optionalCustomer = customerRepository.findByUser_UserId(userId);
+
+        if (optionalCustomer.isEmpty()) {
+            throw new RuntimeException("Customer not found");
+        }
+
+        Customer customer = optionalCustomer.get();
+
+        CustomerDTO customerDTO = new CustomerDTO();
+
+        customerDTO.setCustomerId(customer.getCustomerId());
+        customerDTO.setUserId(customer.getUser().getUserId());
+        customerDTO.setNic(customer.getNic());
+        customerDTO.setAddress(customer.getAddress());
+        customerDTO.setDrivingLicenseNumber(customer.getDrivingLicenseNumber());
+
+        return customerDTO;
+    }
 }

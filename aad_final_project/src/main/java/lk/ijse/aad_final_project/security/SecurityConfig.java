@@ -40,10 +40,31 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/user/login").permitAll()
 
                         // Role APIs
-                        .requestMatchers("/v1/role/**").permitAll()
+                        .requestMatchers("/v1/role/**").hasRole("ADMIN")
 
                         // Create User API - temporary for initial user creation
                         .requestMatchers(HttpMethod.POST, "/v1/user/save").permitAll()
+
+                        .requestMatchers("/v1/user/**").hasRole("ADMIN")
+
+                        // Customer APIs
+                        .requestMatchers(HttpMethod.POST, "/v1/customer/save")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
+
+                        .requestMatchers(HttpMethod.PUT, "/v1/customer/update")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
+
+                        .requestMatchers(HttpMethod.DELETE, "/v1/customer/**")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/v1/customer/all")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/v1/customer/select/**")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/v1/customer/me")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
 
                         .anyRequest().authenticated()
 
