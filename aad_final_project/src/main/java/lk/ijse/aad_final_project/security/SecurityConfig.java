@@ -37,11 +37,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // Login API
-                        .requestMatchers(HttpMethod.POST, "/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/user/login").permitAll()
 
                         // Role APIs
                         .requestMatchers("/v1/role/**").permitAll()
+
+                        // Create User API - temporary for initial user creation
+                        .requestMatchers(HttpMethod.POST, "/v1/user/save").permitAll()
+
                         .anyRequest().authenticated()
+
                 )
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
