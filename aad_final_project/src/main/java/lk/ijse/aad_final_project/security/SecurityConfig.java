@@ -48,42 +48,27 @@ public class SecurityConfig {
                         .requestMatchers("/v1/user/**").hasRole("ADMIN")
 
                         // Customer APIs
-                        .requestMatchers(HttpMethod.POST, "/v1/customer/save")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
-
-                        .requestMatchers(HttpMethod.PUT, "/v1/customer/update")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
-
-                        .requestMatchers(HttpMethod.DELETE, "/v1/customer/**")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
-
-                        .requestMatchers(HttpMethod.GET, "/v1/customer/all")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
-
-                        .requestMatchers(HttpMethod.GET, "/v1/customer/select/**")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
-
-                        .requestMatchers(HttpMethod.GET, "/v1/customer/me")
-                        .hasAnyRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.POST, "/v1/customer/save").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.PUT, "/v1/customer/update").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/customer/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/customer/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/customer/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/customer/me").hasAnyRole("CUSTOMER")
 
                         // Driver APIs
-                        .requestMatchers(HttpMethod.POST, "/v1/driver/save")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/v1/driver/save").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/driver/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/driver/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/v1/driver/update").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/driver/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/driver/me").hasAnyRole( "DRIVER")
 
-                        .requestMatchers(HttpMethod.GET, "/v1/driver/all")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
-
-                        .requestMatchers(HttpMethod.GET, "/v1/driver/select/**")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
-
-                        .requestMatchers(HttpMethod.PUT, "/v1/driver/update")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
-
-                        .requestMatchers(HttpMethod.DELETE, "/v1/driver/**")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
-
-                        .requestMatchers(HttpMethod.GET, "/v1/driver/me")
-                        .hasAnyRole( "DRIVER")
+                        // Vehicle APIs
+                        .requestMatchers(HttpMethod.POST, "/v1/vehicle/save").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/vehicle/all").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.GET, "/v1/vehicle/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.PUT, "/v1/vehicle/update").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/vehicle/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
 
                         .anyRequest().authenticated()
 
