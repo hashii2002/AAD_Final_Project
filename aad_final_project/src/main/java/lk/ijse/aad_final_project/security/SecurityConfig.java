@@ -91,6 +91,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/v1/vehicle/update").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/v1/vehicle/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
 
+                        // Vehicle Document APIs
+                        .requestMatchers("/v1/vehicleDocument/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+
                         .anyRequest().authenticated()
 
                 )
