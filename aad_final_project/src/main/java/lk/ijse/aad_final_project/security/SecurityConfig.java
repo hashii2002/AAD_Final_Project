@@ -63,6 +63,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/v1/driver/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/v1/driver/me").hasAnyRole( "DRIVER")
 
+                        // Vehicle Brand APIs
+                        .requestMatchers(HttpMethod.POST, "/v1/brand/save").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/brand/all").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.GET, "/v1/brand/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.PUT, "/v1/brand/update").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/brand/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+
                         // Vehicle APIs
                         .requestMatchers(HttpMethod.POST, "/v1/vehicle/save").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/v1/vehicle/all").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
