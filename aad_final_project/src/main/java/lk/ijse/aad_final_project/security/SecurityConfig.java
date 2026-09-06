@@ -86,7 +86,6 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN", "FLEET_MANAGER", "DRIVER")
 
                         .anyRequest().authenticated()
-                        //implement driver CRUD and profile APIs
 
                 )
 

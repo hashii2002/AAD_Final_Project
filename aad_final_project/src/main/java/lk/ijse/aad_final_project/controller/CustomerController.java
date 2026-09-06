@@ -5,6 +5,7 @@ import lk.ijse.aad_final_project.dto.CustomerDTO;
 import lk.ijse.aad_final_project.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,9 +44,11 @@ public class CustomerController {
     }
 
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getMyProfile(@RequestParam Long userId) {
+    public CommonResponse getMyProfile(Authentication authentication) {
 
-        CustomerDTO customerDTO = customerService.getCustomerByUserId(userId);
+        String username = authentication.getName();
+
+        CustomerDTO customerDTO = customerService.getCustomerByUsername(username);
 
         return new CommonResponse(0, customerDTO, "Customer Profile Retrieved Successfully"
         );

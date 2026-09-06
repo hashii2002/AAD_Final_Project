@@ -123,10 +123,9 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.deleteById(customerId);
     }
 
-
     @Override
-    public CustomerDTO getCustomerByUserId(Long userId) {
-        Optional<Customer> optionalCustomer = customerRepository.findByUser_UserId(userId);
+    public CustomerDTO getCustomerByUsername(String username) {
+        Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
 
         if (optionalCustomer.isEmpty()) {
             throw new RuntimeException("Customer not found");

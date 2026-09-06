@@ -16,5 +16,5 @@ public interface CustomerService {
 
     void deleteCustomer(Long customerId);
 
-    CustomerDTO getCustomerByUserId(Long userId);
+    CustomerDTO getCustomerByUsername(String username);
 }
