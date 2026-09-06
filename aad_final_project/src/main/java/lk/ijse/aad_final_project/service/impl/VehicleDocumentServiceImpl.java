@@ -90,23 +90,14 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
 
     @Override
     public void updateVehicleDocument(VehicleDocumentDTO vehicleDocumentDTO) {
+
         Optional<VehicleDocument> optionalVehicleDocument = vehicleDocumentRepository.findById(vehicleDocumentDTO.getDocumentId());
 
         if (optionalVehicleDocument.isEmpty()) {
             throw new RuntimeException("Vehicle document not found");
         }
 
-        Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleDocumentDTO.getVehicleId());
-
-        if (optionalVehicle.isEmpty()) {
-            throw new RuntimeException("Vehicle not found");
-        }
-
         VehicleDocument vehicleDocument = optionalVehicleDocument.get();
-
-        Vehicle vehicle = optionalVehicle.get();
-
-        vehicleDocument.setVehicle(vehicle);
         vehicleDocument.setDocumentType(vehicleDocumentDTO.getDocumentType());
         vehicleDocument.setDocumentNumber(vehicleDocumentDTO.getDocumentNumber());
         vehicleDocument.setIssueDate(vehicleDocumentDTO.getIssueDate());
