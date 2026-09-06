@@ -111,8 +111,9 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public DriverDTO getDriverByUserId(Long userId) {
-        Optional<Driver> optionalDriver = driverRepository.findByUser_UserId(userId);
+    public DriverDTO getDriverByUsername(String username) {
+
+        Optional<Driver> optionalDriver = driverRepository.findByUser_Username(username);
 
         if (optionalDriver.isEmpty()) {
             throw new RuntimeException("Driver not found");
@@ -129,4 +130,5 @@ public class DriverServiceImpl implements DriverService {
 
         return driverDTO;
     }
+
 }

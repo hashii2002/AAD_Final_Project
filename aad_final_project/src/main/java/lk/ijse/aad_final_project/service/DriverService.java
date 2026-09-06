@@ -16,5 +16,5 @@ public interface DriverService {
 
     void deleteDriver(Long driverId);
 
-    DriverDTO getDriverByUserId(Long userId);
+    DriverDTO getDriverByUsername(String username);
 }

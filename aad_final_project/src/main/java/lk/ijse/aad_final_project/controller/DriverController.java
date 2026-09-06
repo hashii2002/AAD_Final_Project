@@ -5,6 +5,7 @@ import lk.ijse.aad_final_project.dto.DriverDTO;
 import lk.ijse.aad_final_project.service.DriverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -50,11 +51,14 @@ public class DriverController {
     }
 
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getMyProfile(@RequestParam Long userId) {
+    public CommonResponse getMyProfile(Authentication authentication) {
 
-        DriverDTO driverDTO = driverService.getDriverByUserId(userId);
+        String username = authentication.getName();
 
-        return new CommonResponse(0, driverDTO, "Driver Profile Retrieved Successfully");
+        DriverDTO driverDTO = driverService.getDriverByUsername(username);
+
+        return new CommonResponse(0, driverDTO, "Driver Profile Retrieved Successfully"
+        );
     }
 
     @DeleteMapping(value = "/{driverId}", produces = MediaType.APPLICATION_JSON_VALUE)
