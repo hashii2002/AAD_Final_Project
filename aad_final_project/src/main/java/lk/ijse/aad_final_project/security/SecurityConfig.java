@@ -64,7 +64,7 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN", "FLEET_MANAGER")
 
                         .requestMatchers(HttpMethod.GET, "/v1/customer/me")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
+                        .hasAnyRole("CUSTOMER")
 
                         // Driver APIs
                         .requestMatchers(HttpMethod.POST, "/v1/driver/save")
@@ -83,7 +83,7 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN", "FLEET_MANAGER")
 
                         .requestMatchers(HttpMethod.GET, "/v1/driver/me")
-                        .hasAnyRole("ADMIN", "FLEET_MANAGER", "DRIVER")
+                        .hasAnyRole( "DRIVER")
 
                         .anyRequest().authenticated()
 
