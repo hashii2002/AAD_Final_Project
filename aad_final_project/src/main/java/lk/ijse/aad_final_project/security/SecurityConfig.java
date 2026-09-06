@@ -94,6 +94,9 @@ public class SecurityConfig {
                         // Vehicle Document APIs
                         .requestMatchers("/v1/vehicleDocument/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
 
+                        // Rental Rate APIs
+                        .requestMatchers("/v1/rentalRate/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+
                         .anyRequest().authenticated()
 
                 )
