@@ -109,4 +109,24 @@ public class DriverServiceImpl implements DriverService {
 
         driverRepository.deleteById(driverId);
     }
+
+    @Override
+    public DriverDTO getDriverByUserId(Long userId) {
+        Optional<Driver> optionalDriver = driverRepository.findByUser_UserId(userId);
+
+        if (optionalDriver.isEmpty()) {
+            throw new RuntimeException("Driver not found");
+        }
+
+        Driver driver = optionalDriver.get();
+
+        DriverDTO driverDTO = new DriverDTO();
+
+        driverDTO.setDriverId(driver.getDriverId());
+        driverDTO.setUserId(driver.getUser().getUserId());
+        driverDTO.setLicenseNo(driver.getLicenseNo());
+        driverDTO.setStatus(driver.getStatus());
+
+        return driverDTO;
+    }
 }

@@ -66,7 +66,27 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/customer/me")
                         .hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
 
+                        // Driver APIs
+                        .requestMatchers(HttpMethod.POST, "/v1/driver/save")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/v1/driver/all")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/v1/driver/select/**")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
+
+                        .requestMatchers(HttpMethod.PUT, "/v1/driver/update")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
+
+                        .requestMatchers(HttpMethod.DELETE, "/v1/driver/**")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/v1/driver/me")
+                        .hasAnyRole("ADMIN", "FLEET_MANAGER", "DRIVER")
+
                         .anyRequest().authenticated()
+                        //implement driver CRUD and profile APIs
 
                 )
 
