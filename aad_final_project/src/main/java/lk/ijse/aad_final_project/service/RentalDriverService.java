@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.service;
 
+import lk.ijse.aad_final_project.dto.RentalDTO;
 import lk.ijse.aad_final_project.dto.RentalDriverDTO;
 
 import java.util.List;
@@ -16,5 +17,5 @@ public interface RentalDriverService {
 
     void deleteRentalDriver(Long rentalDriverId);
 
-    List<RentalDriverDTO> getMyRentals(String username);
+    List<RentalDTO> getMyRentals(String username);
 }

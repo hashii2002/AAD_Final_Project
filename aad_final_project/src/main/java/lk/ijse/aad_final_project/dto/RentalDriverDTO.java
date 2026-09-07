@@ -12,4 +12,7 @@ public class RentalDriverDTO {
     private Long rentalDriverId;
     private Long rentalId;
     private Long driverId;
+    private String driverName;
+    private String driverPhone;
+    private String driverLicenseNo;
 }

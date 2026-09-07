@@ -1,6 +1,7 @@
 package lk.ijse.aad_final_project.controller;
 
 import lk.ijse.aad_final_project.constant.CommonResponse;
+import lk.ijse.aad_final_project.dto.RentalDTO;
 import lk.ijse.aad_final_project.dto.RentalDriverDTO;
 import lk.ijse.aad_final_project.service.RentalDriverService;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +46,8 @@ public class RentalDriverController {
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse getMyRentals(Authentication authentication) {
         String username = authentication.getName();
-        List<RentalDriverDTO> rentalDriverDTOList = rentalDriverService.getMyRentals(username);
-        return new CommonResponse(0, rentalDriverDTOList, "My Assigned Rentals Retrieved Successfully");
+        List<RentalDTO> rentalDTOList = rentalDriverService.getMyRentals(username);
+        return new CommonResponse(0, rentalDTOList, "My Assigned Rentals Retrieved Successfully");
     }
 
     @DeleteMapping(value = "/{rentalDriverId}", produces = MediaType.APPLICATION_JSON_VALUE)
