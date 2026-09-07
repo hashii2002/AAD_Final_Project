@@ -27,13 +27,11 @@ public class RentalServiceImpl implements RentalService {
     @Override
     public void saveRental(RentalDTO rentalDTO) {
         Optional<Customer> optionalCustomer = customerRepository.findById(rentalDTO.getCustomerId());
-
         if (optionalCustomer.isEmpty()) {
             throw new RuntimeException("Customer not found");
         }
 
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(rentalDTO.getVehicleId());
-
         if (optionalVehicle.isEmpty()) {
             throw new RuntimeException("Vehicle not found");
         }
@@ -47,22 +45,45 @@ public class RentalServiceImpl implements RentalService {
         Vehicle vehicle = optionalVehicle.get();
         RentalRate rentalRate = optionalRentalRate.get();
 
+        // ------------ Rental Days Auto Calculation ----------------
+        long calculatedDays = java.time.Duration.between(rentalDTO.getStartDate(), rentalDTO.getEndDate()).toDays();
+        if (calculatedDays <= 0) {
+            throw new RuntimeException("Invalid rental duration. End date must be after start date.");
+        }
+        int rentalDays = (int) calculatedDays;
+
+        // ----------- Total Amount Auto Calculation ----------------
+        double totalAmount = calculateTotalAmount(rentalDays, rentalRate);
+
         Rental rental = new Rental();
 
         rental.setStartDate(rentalDTO.getStartDate());
         rental.setEndDate(rentalDTO.getEndDate());
-        rental.setRentalDays(rentalDTO.getRentalDays());
+        rental.setRentalDays(rentalDays);
         rental.setPickupMileage(rentalDTO.getPickupMileage());
         rental.setReturnMileage(rentalDTO.getReturnMileage());
         rental.setDepositAmount(rentalDTO.getDepositAmount());
         rental.setStatus(rentalDTO.getStatus());
-        rental.setTotalAmount(rentalDTO.getTotalAmount());
+        rental.setTotalAmount(totalAmount);
 
         rental.setCustomer(customer);
         rental.setVehicle(vehicle);
         rental.setRentalRate(rentalRate);
 
         rentalRepository.save(rental);
+    }
+
+    private double calculateTotalAmount(int rentalDays, RentalRate rentalRate) {
+        double dailyRate = rentalRate.getDailyRate();
+        double monthlyRate = rentalRate.getMonthlyRate();
+
+        if (rentalDays >= 30) {
+            int months = rentalDays / 30;
+            int remainingDays = rentalDays % 30;
+            return (months * monthlyRate) + (remainingDays * dailyRate);
+        } else {
+            return rentalDays * dailyRate;
+        }
     }
 
     @Override
