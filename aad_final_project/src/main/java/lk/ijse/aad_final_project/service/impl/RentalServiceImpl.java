@@ -2,6 +2,7 @@ package lk.ijse.aad_final_project.service.impl;
 
 import lk.ijse.aad_final_project.dto.RentalDTO;
 import lk.ijse.aad_final_project.entity.*;
+import lk.ijse.aad_final_project.enums.DriverOption;
 import lk.ijse.aad_final_project.enums.RentalStatus;
 import lk.ijse.aad_final_project.repository.*;
 import lk.ijse.aad_final_project.service.RentalService;
@@ -23,6 +24,8 @@ public class RentalServiceImpl implements RentalService {
     private final VehicleRepository vehicleRepository;
     private final RentalRateRepository rentalRateRepository;
     private final UserRepository userRepository;
+    private final DriverRepository driverRepository;
+    private final RentalDriverRepository rentalDriverRepository;
 
     @Override
     public void saveRental(RentalDTO rentalDTO) {
@@ -63,14 +66,31 @@ public class RentalServiceImpl implements RentalService {
         rental.setPickupMileage(rentalDTO.getPickupMileage());
         rental.setReturnMileage(rentalDTO.getReturnMileage());
         rental.setDepositAmount(rentalDTO.getDepositAmount());
-        rental.setStatus(rentalDTO.getStatus());
+        rental.setStatus(rentalDTO.getStatus() != null ? rentalDTO.getStatus() : RentalStatus.PENDING);
         rental.setTotalAmount(totalAmount);
+
+        DriverOption driverOption = rentalDTO.getDriverOption() != null ? rentalDTO.getDriverOption() : DriverOption.WITHOUT_DRIVER;
+        rental.setDriverOption(driverOption);
 
         rental.setCustomer(customer);
         rental.setVehicle(vehicle);
         rental.setRentalRate(rentalRate);
 
-        rentalRepository.save(rental);
+        Rental savedRental = rentalRepository.save(rental);
+
+        if (DriverOption.WITH_DRIVER.equals(driverOption)) {
+            if (rentalDTO.getDriverId() == null) {
+                throw new RuntimeException("Driver ID is required when WITH_DRIVER option is selected");
+            }
+
+            Driver driver = driverRepository.findById(rentalDTO.getDriverId()).orElseThrow(() -> new RuntimeException("Driver not found"));
+
+            RentalDriver rentalDriver = new RentalDriver();
+            rentalDriver.setRental(savedRental);
+            rentalDriver.setDriver(driver);
+
+            rentalDriverRepository.save(rentalDriver);
+        }
     }
 
     private double calculateTotalAmount(int rentalDays, RentalRate rentalRate) {
@@ -148,33 +168,38 @@ public class RentalServiceImpl implements RentalService {
     @Override
     public void updateRental(RentalDTO rentalDTO) {
         Optional<Rental> optionalRental = rentalRepository.findById(rentalDTO.getRentalId());
-
         if (optionalRental.isEmpty()) {
             throw new RuntimeException("Rental not found");
         }
 
         Optional<Customer> optionalCustomer = customerRepository.findById(rentalDTO.getCustomerId());
-
         if (optionalCustomer.isEmpty()) {
             throw new RuntimeException("Customer not found");
         }
 
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(rentalDTO.getVehicleId());
-
         if (optionalVehicle.isEmpty()) {
             throw new RuntimeException("Vehicle not found");
         }
         Optional<RentalRate> optionalRentalRate = rentalRateRepository.findById(rentalDTO.getRentalRateId());
-
         if (optionalRentalRate.isEmpty()) {
             throw new RuntimeException("Rental rate not found");
         }
 
         Rental rental = optionalRental.get();
-
         Customer customer = optionalCustomer.get();
         Vehicle vehicle = optionalVehicle.get();
         RentalRate rentalRate = optionalRentalRate.get();
+
+        // ------------ Rental Days Auto Recalculation ----------------
+        long calculatedDays = java.time.Duration.between(rentalDTO.getStartDate(), rentalDTO.getEndDate()).toDays();
+        if (calculatedDays <= 0) {
+            throw new RuntimeException("Invalid rental duration.");
+        }
+        int rentalDays = (int) calculatedDays;
+
+        // ----------- Total Amount Auto Recalculation ----------------
+        double totalAmount = calculateTotalAmount(rentalDays, rentalRate);
 
         rental.setStartDate(rentalDTO.getStartDate());
         rental.setEndDate(rentalDTO.getEndDate());
@@ -182,14 +207,51 @@ public class RentalServiceImpl implements RentalService {
         rental.setPickupMileage(rentalDTO.getPickupMileage());
         rental.setReturnMileage(rentalDTO.getReturnMileage());
         rental.setDepositAmount(rentalDTO.getDepositAmount());
-        rental.setStatus(rentalDTO.getStatus());
-        rental.setTotalAmount(rentalDTO.getTotalAmount());
+
+        if (rentalDTO.getStatus() != null) {
+            rental.setStatus(rentalDTO.getStatus());
+        }
+        rental.setTotalAmount(totalAmount);
+
+        DriverOption driverOption = rentalDTO.getDriverOption() != null ? rentalDTO.getDriverOption() : DriverOption.WITHOUT_DRIVER;
+        rental.setDriverOption(driverOption);
 
         rental.setCustomer(customer);
         rental.setVehicle(vehicle);
         rental.setRentalRate(rentalRate);
 
-        rentalRepository.save(rental);
+        Rental updatedRental = rentalRepository.save(rental);
+
+        // ------------ Driver Option & Assignment Management ----------------
+        if (DriverOption.WITH_DRIVER.equals(driverOption)) {
+            if (rentalDTO.getDriverId() == null) {
+                throw new RuntimeException("Driver ID is required when WITH_DRIVER option is selected");
+            }
+
+            Optional<Driver> optionalDriver = driverRepository.findById(rentalDTO.getDriverId());
+            if (optionalDriver.isEmpty()) {
+                throw new RuntimeException("Driver not found");
+            }
+            Driver driver = optionalDriver.get();
+
+            List<RentalDriver> existingRentalDrivers = updatedRental.getRentalDrivers();
+
+            if (existingRentalDrivers != null && !existingRentalDrivers.isEmpty()) {
+                RentalDriver rentalDriver = existingRentalDrivers.get(0);
+                rentalDriver.setDriver(driver);
+                rentalDriverRepository.save(rentalDriver);
+            } else {
+                RentalDriver newRentalDriver = new RentalDriver();
+                newRentalDriver.setRental(updatedRental);
+                newRentalDriver.setDriver(driver);
+                rentalDriverRepository.save(newRentalDriver);
+            }
+        } else {
+            List<RentalDriver> existingRentalDrivers = updatedRental.getRentalDrivers();
+            if (existingRentalDrivers != null && !existingRentalDrivers.isEmpty()) {
+                rentalDriverRepository.deleteAll(existingRentalDrivers);
+            }
+        }
 
     }
 
