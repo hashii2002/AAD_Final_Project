@@ -1,16 +1,13 @@
 package lk.ijse.aad_final_project.service.impl;
 
 import lk.ijse.aad_final_project.dto.RentalDTO;
-import lk.ijse.aad_final_project.entity.Customer;
-import lk.ijse.aad_final_project.entity.Rental;
-import lk.ijse.aad_final_project.entity.RentalRate;
-import lk.ijse.aad_final_project.entity.Vehicle;
-import lk.ijse.aad_final_project.repository.CustomerRepository;
-import lk.ijse.aad_final_project.repository.RentalRateRepository;
-import lk.ijse.aad_final_project.repository.RentalRepository;
-import lk.ijse.aad_final_project.repository.VehicleRepository;
+import lk.ijse.aad_final_project.entity.*;
+import lk.ijse.aad_final_project.enums.RentalStatus;
+import lk.ijse.aad_final_project.repository.*;
 import lk.ijse.aad_final_project.service.RentalService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,6 +22,7 @@ public class RentalServiceImpl implements RentalService {
     private final CustomerRepository customerRepository;
     private final VehicleRepository vehicleRepository;
     private final RentalRateRepository rentalRateRepository;
+    private final UserRepository userRepository;
 
     @Override
     public void saveRental(RentalDTO rentalDTO) {
@@ -176,10 +174,56 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     public void deleteRental(Long rentalId) {
-        if (!rentalRepository.existsById(rentalId)) {
+
+        Optional<Rental> optionalRental = rentalRepository.findById(rentalId);
+
+        if (optionalRental.isEmpty()) {
             throw new RuntimeException("Rental not found");
         }
 
-        rentalRepository.deleteById(rentalId);
+        Rental rental = optionalRental.get();
+
+        rental.setStatus(RentalStatus.CANCELLED);
+
+        rentalRepository.save(rental);
+    }
+
+    @Override
+    public List<RentalDTO> getMyRentals(String username) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        Optional<User> optionalUser = userRepository.findByUsername(currentUsername);
+        if (optionalUser.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        Long currentUserId = optionalUser.get().getUserId();
+
+        List<Rental> rentals = rentalRepository.findByCustomer_User_UserId(currentUserId);
+
+        List<RentalDTO> rentalDTOList = new ArrayList<>();
+
+        for (Rental rental : rentals) {
+
+            RentalDTO rentalDTO = new RentalDTO();
+
+            rentalDTO.setRentalId(rental.getRentalId());
+            rentalDTO.setStartDate(rental.getStartDate());
+            rentalDTO.setEndDate(rental.getEndDate());
+            rentalDTO.setRentalDays(rental.getRentalDays());
+            rentalDTO.setPickupMileage(rental.getPickupMileage());
+            rentalDTO.setReturnMileage(rental.getReturnMileage());
+            rentalDTO.setDepositAmount(rental.getDepositAmount());
+            rentalDTO.setStatus(rental.getStatus());
+            rentalDTO.setTotalAmount(rental.getTotalAmount());
+            rentalDTO.setCustomerId(rental.getCustomer().getCustomerId());
+            rentalDTO.setVehicleId(rental.getVehicle().getVehicleId());
+            rentalDTO.setRentalRateId(rental.getRentalRate().getRateId());
+
+            rentalDTOList.add(rentalDTO);
+        }
+
+        return rentalDTOList;
     }
 }

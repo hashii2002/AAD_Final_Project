@@ -58,18 +58,18 @@ public class Rental {
     @JoinColumn(name = "rental_rate_id", nullable = false)
     private RentalRate rentalRate;
 
-    @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "rental", fetch = FetchType.LAZY)
     private List<Payment> payments = new ArrayList<>();
 
-    @OneToOne(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "rental", fetch = FetchType.LAZY)
     private Invoice invoice;
 
-    @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "rental", fetch = FetchType.LAZY)
     private List<RentalDriver> rentalDrivers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "rental", fetch = FetchType.LAZY)
     private List<VehicleInspection> inspections = new ArrayList<>();
 
-    @OneToOne(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "rental", fetch = FetchType.LAZY)
     private Review review;
 }

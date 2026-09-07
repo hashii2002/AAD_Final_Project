@@ -15,4 +15,6 @@ public interface RentalService {
     void updateRental(RentalDTO rentalDTO);
 
     void deleteRental(Long rentalId);
+
+    List<RentalDTO> getMyRentals(String username);
 }

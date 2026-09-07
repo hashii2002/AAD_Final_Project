@@ -97,6 +97,14 @@ public class SecurityConfig {
                         // Rental Rate APIs
                         .requestMatchers("/v1/rentalRate/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
 
+                        // Rental APIs
+                        .requestMatchers(HttpMethod.POST, "/v1/rental/save").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/rental/me").hasRole( "CUSTOMER")
+                        .requestMatchers(HttpMethod.GET, "/v1/rental/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/rental/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/v1/rental/update").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/rental/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+
                         .anyRequest().authenticated()
 
                 )
