@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.PaymentDTO;
 import lk.ijse.aad_final_project.entity.Payment;
 import lk.ijse.aad_final_project.entity.Rental;
+import lk.ijse.aad_final_project.enums.PaymentStatus;
 import lk.ijse.aad_final_project.repository.PaymentRepository;
 import lk.ijse.aad_final_project.repository.RentalRepository;
 import lk.ijse.aad_final_project.service.PaymentService;
@@ -48,26 +49,11 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public List<PaymentDTO> getAllPayments() {
         List<Payment> payments = paymentRepository.findAll();
-
         List<PaymentDTO> paymentDTOList = new ArrayList<>();
 
         for (Payment payment : payments) {
-
-            PaymentDTO paymentDTO = new PaymentDTO();
-
-            paymentDTO.setPaymentId(payment.getPaymentId());
-            paymentDTO.setPaymentReference(payment.getPaymentReference());
-            paymentDTO.setAmount(payment.getAmount());
-            paymentDTO.setDiscount(payment.getDiscount());
-            paymentDTO.setBalance(payment.getBalance());
-            paymentDTO.setPaymentDate(payment.getPaymentDate());
-            paymentDTO.setPaymentMethod(payment.getPaymentMethod());
-            paymentDTO.setPaymentStatus(payment.getPaymentStatus());
-            paymentDTO.setRentalId(payment.getRental().getRentalId());
-
-            paymentDTOList.add(paymentDTO);
+            paymentDTOList.add(mapToDTO(payment));
         }
-
         return paymentDTOList;
     }
 
@@ -78,37 +64,21 @@ public class PaymentServiceImpl implements PaymentService {
         if (optionalPayment.isEmpty()) {
             throw new RuntimeException("Payment not found");
         }
-
-        Payment payment = optionalPayment.get();
-
-        PaymentDTO paymentDTO = new PaymentDTO();
-
-        paymentDTO.setPaymentId(payment.getPaymentId());
-        paymentDTO.setPaymentReference(payment.getPaymentReference());
-        paymentDTO.setAmount(payment.getAmount());
-        paymentDTO.setDiscount(payment.getDiscount());
-        paymentDTO.setBalance(payment.getBalance());
-        paymentDTO.setPaymentDate(payment.getPaymentDate());
-        paymentDTO.setPaymentMethod(payment.getPaymentMethod());
-        paymentDTO.setPaymentStatus(payment.getPaymentStatus());
-        paymentDTO.setRentalId(payment.getRental().getRentalId());
-
-        return paymentDTO;
+        return mapToDTO(optionalPayment.get());
     }
 
     @Override
     public void updatePayment(PaymentDTO paymentDTO) {
         Optional<Payment> optionalPayment = paymentRepository.findById(paymentDTO.getPaymentId());
-
         if (optionalPayment.isEmpty()) {
             throw new RuntimeException("Payment not found");
         }
 
         Optional<Rental> optionalRental = rentalRepository.findById(paymentDTO.getRentalId());
-
         if (optionalRental.isEmpty()) {
             throw new RuntimeException("Rental not found");
         }
+
         Payment payment = optionalPayment.get();
         Rental rental = optionalRental.get();
 
@@ -127,10 +97,59 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void deletePayment(Long paymentId) {
-        if (!paymentRepository.existsById(paymentId)) {
+        Optional<Payment> optionalPayment = paymentRepository.findById(paymentId);
+
+        if (optionalPayment.isEmpty()) {
             throw new RuntimeException("Payment not found");
         }
-        paymentRepository.deleteById(paymentId);
 
+        Payment payment = optionalPayment.get();
+
+        if (payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
+            throw new RuntimeException("Payment is already refunded");
+        }
+
+        payment.setPaymentStatus(PaymentStatus.REFUNDED);
+
+        paymentRepository.save(payment);
+    }
+
+    @Override
+    public List<PaymentDTO> getMyPayments(String username) {
+        List<Payment> payments = paymentRepository.findPaymentsByCustomerUsername(username);
+        List<PaymentDTO> paymentDTOList = new ArrayList<>();
+
+        for (Payment payment : payments) {
+            paymentDTOList.add(mapToDTO(payment));
+        }
+        return paymentDTOList;
+    }
+
+    private PaymentDTO mapToDTO(Payment payment) {
+        PaymentDTO paymentDTO = new PaymentDTO();
+        paymentDTO.setPaymentId(payment.getPaymentId());
+        paymentDTO.setPaymentReference(payment.getPaymentReference());
+        paymentDTO.setAmount(payment.getAmount());
+        paymentDTO.setDiscount(payment.getDiscount());
+        paymentDTO.setBalance(payment.getBalance());
+        paymentDTO.setPaymentDate(payment.getPaymentDate());
+        paymentDTO.setPaymentMethod(payment.getPaymentMethod());
+        paymentDTO.setPaymentStatus(payment.getPaymentStatus());
+
+        if (payment.getRental() != null) {
+            paymentDTO.setRentalId(payment.getRental().getRentalId());
+
+            if (payment.getRental().getCustomer() != null) {
+                paymentDTO.setCustomerId(payment.getRental().getCustomer().getCustomerId());
+
+                if (payment.getRental().getCustomer().getUser() != null) {
+                    String fullName = payment.getRental().getCustomer().getUser().getFirstName() + " " +
+                            payment.getRental().getCustomer().getUser().getLastName();
+                    paymentDTO.setCustomerName(fullName);
+                }
+            }
+        }
+
+        return paymentDTO;
     }
 }

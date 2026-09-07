@@ -30,4 +30,8 @@ public class PaymentDTO {
     private PaymentStatus paymentStatus;
 
     private Long rentalId;
+
+    private Long customerId;
+
+    private String customerName;
 }

@@ -113,6 +113,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/v1/rentalDriver/update").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/v1/rentalDriver/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
 
+                        // Payment APIs
+                        .requestMatchers(HttpMethod.POST, "/v1/payment/save").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/payment/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/payment/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/v1/payment/update").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/payment/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/payment/me").hasRole("CUSTOMER")
+
                         .anyRequest().authenticated()
 
                 )
