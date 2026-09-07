@@ -126,4 +126,24 @@ public class RentalDriverServiceImpl implements RentalDriverService {
         rentalDriverRepository.deleteById(rentalDriverId);
 
     }
+
+    @Override
+    public List<RentalDriverDTO> getMyRentals(String username) {
+
+        List<RentalDriver> rentalDrivers = rentalDriverRepository.findByDriver_User_Username(username);
+
+        List<RentalDriverDTO> rentalDriverDTOList = new ArrayList<>();
+
+        for (RentalDriver rentalDriver : rentalDrivers) {
+
+            RentalDriverDTO rentalDriverDTO = new RentalDriverDTO();
+
+            rentalDriverDTO.setRentalDriverId(rentalDriver.getRentalDriverId());
+            rentalDriverDTO.setRentalId(rentalDriver.getRental().getRentalId());
+            rentalDriverDTO.setDriverId(rentalDriver.getDriver().getDriverId());
+            rentalDriverDTOList.add(rentalDriverDTO);
+        }
+
+        return rentalDriverDTOList;
+    }
 }

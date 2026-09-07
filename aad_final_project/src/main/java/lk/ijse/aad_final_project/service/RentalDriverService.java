@@ -15,4 +15,6 @@ public interface RentalDriverService {
     void updateRentalDriver(RentalDriverDTO rentalDriverDTO);
 
     void deleteRentalDriver(Long rentalDriverId);
+
+    List<RentalDriverDTO> getMyRentals(String username);
 }

@@ -105,6 +105,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/v1/rental/update").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/v1/rental/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
 
+                        // Rental Driver APIs
+                        .requestMatchers(HttpMethod.POST, "/v1/rentalDriver/save").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/rentalDriver/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/rentalDriver/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/rentalDriver/me").hasRole( "DRIVER")
+                        .requestMatchers(HttpMethod.PUT, "/v1/rentalDriver/update").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/rentalDriver/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+
                         .anyRequest().authenticated()
 
                 )

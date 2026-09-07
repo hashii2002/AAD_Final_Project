@@ -5,6 +5,7 @@ import lk.ijse.aad_final_project.dto.RentalDriverDTO;
 import lk.ijse.aad_final_project.service.RentalDriverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +40,13 @@ public class RentalDriverController {
     public CommonResponse updateRentalDriver(@RequestBody RentalDriverDTO rentalDriverDTO) {
         rentalDriverService.updateRentalDriver(rentalDriverDTO);
         return new CommonResponse(0, "Rental Driver Updated Successfully");
+    }
+
+    @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getMyRentals(Authentication authentication) {
+        String username = authentication.getName();
+        List<RentalDriverDTO> rentalDriverDTOList = rentalDriverService.getMyRentals(username);
+        return new CommonResponse(0, rentalDriverDTOList, "My Assigned Rentals Retrieved Successfully");
     }
 
     @DeleteMapping(value = "/{rentalDriverId}", produces = MediaType.APPLICATION_JSON_VALUE)
