@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.dto;
 
+import lk.ijse.aad_final_project.enums.DriverOption;
 import lk.ijse.aad_final_project.enums.RentalStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,4 +25,7 @@ public class RentalDTO {
     private Long customerId;
     private Long vehicleId;
     private Long rentalRateId;
+
+    private DriverOption driverOption;
+    private Long driverId;
 }

@@ -1,6 +1,7 @@
 package lk.ijse.aad_final_project.entity;
 
 import jakarta.persistence.*;
+import lk.ijse.aad_final_project.enums.DriverOption;
 import lk.ijse.aad_final_project.enums.RentalStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -42,6 +43,10 @@ public class Rental {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private RentalStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "driver_option", nullable = false)
+    private DriverOption driverOption;
 
     @Column(name = "total_amount", nullable = false)
     private Double totalAmount;
