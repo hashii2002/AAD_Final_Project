@@ -5,6 +5,7 @@ import lk.ijse.aad_final_project.entity.Rental;
 import lk.ijse.aad_final_project.entity.User;
 import lk.ijse.aad_final_project.entity.Vehicle;
 import lk.ijse.aad_final_project.entity.VehicleInspection;
+import lk.ijse.aad_final_project.enums.RoleName;
 import lk.ijse.aad_final_project.repository.RentalRepository;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.repository.VehicleInspectionRepository;
@@ -45,6 +46,11 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
         Vehicle vehicle = optionalVehicle.get();
         Rental rental = optionalRental.get();
         User inspectedBy = optionalUser.get();
+
+        RoleName roleName = inspectedBy.getRole().getRoleName();
+        if (roleName != RoleName.ADMIN && roleName != RoleName.FLEET_MANAGER) {
+            throw new RuntimeException("Only Admin or Fleet Manager can perform vehicle inspection");
+        }
 
         VehicleInspection vehicleInspection = new VehicleInspection();
         vehicleInspection.setInspectionType(vehicleInspectionDTO.getInspectionType());
@@ -109,14 +115,18 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
 
     @Override
     public void updateVehicleInspection(VehicleInspectionDTO vehicleInspectionDTO) {
-        Optional<VehicleInspection> optionalInspection =
-                vehicleInspectionRepository.findById(vehicleInspectionDTO.getInspectionId());
+        Optional<VehicleInspection> optionalInspection = vehicleInspectionRepository.findById(vehicleInspectionDTO.getInspectionId());
 
         if (optionalInspection.isEmpty()) {
             throw new RuntimeException("Vehicle inspection not found");
         }
 
         VehicleInspection inspection = optionalInspection.get();
+
+        RoleName roleName = inspection.getInspectedBy().getRole().getRoleName();
+        if (roleName != RoleName.ADMIN && roleName != RoleName.FLEET_MANAGER) {
+            throw new RuntimeException("Only Admin or Fleet Manager can perform vehicle inspection");
+        }
 
         inspection.setInspectionType(vehicleInspectionDTO.getInspectionType());
         inspection.setInspectionDate(vehicleInspectionDTO.getInspectionDate());
