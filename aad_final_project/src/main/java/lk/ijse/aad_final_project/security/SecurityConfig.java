@@ -132,6 +132,8 @@ public class SecurityConfig {
                         // Vehicle Inspection APIs
                         .requestMatchers("/v1/vehicle-inspection/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
 
+                        .requestMatchers("/v1/maintenance/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+
                         .anyRequest().authenticated()
 
                 )
