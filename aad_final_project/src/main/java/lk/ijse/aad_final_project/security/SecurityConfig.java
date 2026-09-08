@@ -132,7 +132,16 @@ public class SecurityConfig {
                         // Vehicle Inspection APIs
                         .requestMatchers("/v1/vehicle-inspection/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
 
+                        // Maintenance APIs
                         .requestMatchers("/v1/maintenance/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+
+                        // Review APIs
+                        .requestMatchers(HttpMethod.POST, "/v1/review/save").hasRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.PUT, "/v1/review/update").hasRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/review/**").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/v1/review/me").hasRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.GET, "/v1/review/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/review/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
 
                         .anyRequest().authenticated()
 

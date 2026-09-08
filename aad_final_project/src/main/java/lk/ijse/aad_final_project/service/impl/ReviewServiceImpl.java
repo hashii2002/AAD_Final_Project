@@ -24,21 +24,45 @@ public class ReviewServiceImpl implements ReviewService {
     private final CustomerRepository customerRepository;
 
     @Override
-    public void saveReview(ReviewDTO reviewDTO) {
+    public void saveReview(ReviewDTO reviewDTO, String username) {
+
+        if (reviewDTO.getRating() == null || reviewDTO.getRating() < 1 || reviewDTO.getRating() > 5) {
+            throw new RuntimeException("Rating must be between 1 and 5");
+        }
+
+        if (reviewDTO.getRentalId() == null) {
+            throw new RuntimeException("Rental ID is required");
+        }
+
+        Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
+        if (optionalCustomer.isEmpty()) {
+            throw new RuntimeException("Customer not found");
+        }
+
+        Customer customer = optionalCustomer.get();
+
         Optional<Rental> optionalRental = rentalRepository.findById(reviewDTO.getRentalId());
         if (optionalRental.isEmpty()) {
             throw new RuntimeException("Rental not found");
         }
 
-        Optional<Customer> optionalCustomer = customerRepository.findById(reviewDTO.getCustomerId());
-        if (optionalCustomer.isEmpty()) {
-            throw new RuntimeException("Customer not found");
+        Rental rental = optionalRental.get();
+
+        if (!rental.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
+            throw new RuntimeException("You can only review your own rental");
         }
 
-        Rental rental = optionalRental.get();
-        Customer customer = optionalCustomer.get();
+        Optional<Review> existingReview = reviewRepository.findByRental_RentalId(rental.getRentalId());
+        if (existingReview.isPresent()) {
+            throw new RuntimeException("This rental already has a review");
+        }
+
+        if (rental.getStatus() != null && !rental.getStatus().name().equals("COMPLETED")) {
+            throw new RuntimeException("You can review the rental only after it is completed");
+        }
 
         Review review = new Review();
+
         review.setRating(reviewDTO.getRating());
         review.setComment(reviewDTO.getComment());
         review.setRental(rental);
@@ -49,25 +73,66 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<ReviewDTO> getAllReviews() {
+
         List<Review> reviews = reviewRepository.findAll();
         List<ReviewDTO> reviewDTOList = new ArrayList<>();
 
         for (Review review : reviews) {
-            ReviewDTO dto = new ReviewDTO();
-            dto.setReviewId(review.getReviewId());
-            dto.setRating(review.getRating());
-            dto.setComment(review.getComment());
-            dto.setRentalId(review.getRental().getRentalId());
-            dto.setCustomerId(review.getCustomer().getCustomerId());
-
-            reviewDTOList.add(dto);
+            reviewDTOList.add(mapToDTO(review));
         }
-
         return reviewDTOList;
     }
 
     @Override
     public ReviewDTO selectReview(Long reviewId) {
+
+        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
+
+        if (optionalReview.isEmpty()) {
+            throw new RuntimeException("Review not found");
+        }
+        return mapToDTO(optionalReview.get());
+    }
+
+    @Override
+    public void updateReview(ReviewDTO reviewDTO, String username) {
+
+        if (reviewDTO.getReviewId() == null) {
+            throw new RuntimeException("Review ID is required");
+        }
+
+        Optional<Review> optionalReview = reviewRepository.findById(reviewDTO.getReviewId());
+        if (optionalReview.isEmpty()) {
+            throw new RuntimeException("Review not found");
+        }
+
+        Review review = optionalReview.get();
+
+        Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
+
+        if (optionalCustomer.isEmpty()) {
+            throw new RuntimeException("Customer not found");
+        }
+
+        Customer customer = optionalCustomer.get();
+
+        if (!review.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
+            throw new RuntimeException("You can only update your own review");
+        }
+
+        if (reviewDTO.getRating() == null || reviewDTO.getRating() < 1 || reviewDTO.getRating() > 5) {
+            throw new RuntimeException("Rating must be between 1 and 5");
+        }
+
+        review.setRating(reviewDTO.getRating());
+        review.setComment(reviewDTO.getComment());
+
+        reviewRepository.save(review);
+    }
+
+    @Override
+    public void deleteReview(Long reviewId, String username, String role) {
+
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
 
         if (optionalReview.isEmpty()) {
@@ -76,37 +141,51 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = optionalReview.get();
 
+        if (role.equals("ADMIN")) {
+            reviewRepository.deleteById(reviewId);
+            return;
+        }
+
+        Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
+        if (optionalCustomer.isEmpty()) {
+            throw new RuntimeException("Customer not found");
+        }
+
+        Customer customer = optionalCustomer.get();
+
+        if (!review.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
+            throw new RuntimeException("You can only delete your own review");
+        }
+        reviewRepository.deleteById(reviewId);
+    }
+
+    @Override
+    public List<ReviewDTO> getMyReviews(String username) {
+
+        List<Review> reviews = reviewRepository.findByCustomer_User_Username(username);
+        List<ReviewDTO> reviewDTOList = new ArrayList<>();
+
+        for (Review review : reviews) {
+            reviewDTOList.add(mapToDTO(review));
+        }
+
+        return reviewDTOList;
+    }
+
+    private ReviewDTO mapToDTO(Review review) {
+
         ReviewDTO dto = new ReviewDTO();
+
         dto.setReviewId(review.getReviewId());
         dto.setRating(review.getRating());
         dto.setComment(review.getComment());
-        dto.setRentalId(review.getRental().getRentalId());
-        dto.setCustomerId(review.getCustomer().getCustomerId());
 
+        if (review.getRental() != null) {
+            dto.setRentalId(review.getRental().getRentalId());
+        }
+        if (review.getCustomer() != null) {
+            dto.setCustomerId(review.getCustomer().getCustomerId());
+        }
         return dto;
-    }
-
-    @Override
-    public void updateReview(ReviewDTO reviewDTO) {
-        Optional<Review> optionalReview = reviewRepository.findById(reviewDTO.getReviewId());
-
-        if (optionalReview.isEmpty()) {
-            throw new RuntimeException("Review not found");
-        }
-
-        Review review = optionalReview.get();
-        review.setRating(reviewDTO.getRating());
-        review.setComment(reviewDTO.getComment());
-
-        reviewRepository.save(review);
-    }
-
-    @Override
-    public void deleteReview(Long reviewId) {
-        if (!reviewRepository.existsById(reviewId)) {
-            throw new RuntimeException("Review not found");
-        }
-
-        reviewRepository.deleteById(reviewId);
     }
 }
