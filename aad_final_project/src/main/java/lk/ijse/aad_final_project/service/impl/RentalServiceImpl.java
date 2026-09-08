@@ -129,12 +129,15 @@ public class RentalServiceImpl implements RentalService {
             rentalDTO.setVehicleId(rental.getVehicle().getVehicleId());
             rentalDTO.setRentalRateId(rental.getRentalRate().getRateId());
 
+            rentalDTO.setDriverOption(rental.getDriverOption());
+
+            if (rental.getRentalDrivers() != null && !rental.getRentalDrivers().isEmpty()) {
+                rentalDTO.setDriverId(rental.getRentalDrivers().get(0).getDriver().getDriverId());
+            }
             rentalDTOList.add(rentalDTO);
         }
-
         return rentalDTOList;
-
-        }
+    }
 
     @Override
     public RentalDTO selectRental(Long rentalId) {
@@ -160,9 +163,12 @@ public class RentalServiceImpl implements RentalService {
         rentalDTO.setCustomerId(rental.getCustomer().getCustomerId());
         rentalDTO.setVehicleId(rental.getVehicle().getVehicleId());
         rentalDTO.setRentalRateId(rental.getRentalRate().getRateId());
+        rentalDTO.setDriverOption(rental.getDriverOption());
 
+        if (rental.getRentalDrivers() != null && !rental.getRentalDrivers().isEmpty()) {
+            rentalDTO.setDriverId(rental.getRentalDrivers().get(0).getDriver().getDriverId());
+        }
         return rentalDTO;
-
     }
 
     @Override
@@ -203,7 +209,7 @@ public class RentalServiceImpl implements RentalService {
 
         rental.setStartDate(rentalDTO.getStartDate());
         rental.setEndDate(rentalDTO.getEndDate());
-        rental.setRentalDays(rentalDTO.getRentalDays());
+        rental.setRentalDays(rentalDays);
         rental.setPickupMileage(rentalDTO.getPickupMileage());
         rental.setReturnMileage(rentalDTO.getReturnMileage());
         rental.setDepositAmount(rentalDTO.getDepositAmount());
@@ -274,17 +280,7 @@ public class RentalServiceImpl implements RentalService {
     @Override
     public List<RentalDTO> getMyRentals(String username) {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = authentication.getName();
-
-        Optional<User> optionalUser = userRepository.findByUsername(currentUsername);
-        if (optionalUser.isEmpty()) {
-            throw new RuntimeException("User not found");
-        }
-        Long currentUserId = optionalUser.get().getUserId();
-
-        List<Rental> rentals = rentalRepository.findByCustomer_User_UserId(currentUserId);
-
+        List<Rental> rentals = rentalRepository.findByCustomer_User_Username(username);
         List<RentalDTO> rentalDTOList = new ArrayList<>();
 
         for (Rental rental : rentals) {
@@ -303,10 +299,13 @@ public class RentalServiceImpl implements RentalService {
             rentalDTO.setCustomerId(rental.getCustomer().getCustomerId());
             rentalDTO.setVehicleId(rental.getVehicle().getVehicleId());
             rentalDTO.setRentalRateId(rental.getRentalRate().getRateId());
+            rentalDTO.setDriverOption(rental.getDriverOption());
 
+            if (rental.getRentalDrivers() != null && !rental.getRentalDrivers().isEmpty()) {
+                rentalDTO.setDriverId(rental.getRentalDrivers().get(0).getDriver().getDriverId());
+            }
             rentalDTOList.add(rentalDTO);
         }
-
         return rentalDTOList;
     }
 }

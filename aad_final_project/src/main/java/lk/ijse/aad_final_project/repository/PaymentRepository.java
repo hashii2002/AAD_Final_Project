@@ -12,4 +12,6 @@ import java.util.List;
 public interface PaymentRepository extends JpaRepository<Payment,Long> {
     @Query("SELECT p FROM Payment p WHERE p.rental.customer.user.username = :username")
     List<Payment> findPaymentsByCustomerUsername(@Param("username") String username);
+
+    List<Payment> findByRental_RentalId(Long rentalId);
 }

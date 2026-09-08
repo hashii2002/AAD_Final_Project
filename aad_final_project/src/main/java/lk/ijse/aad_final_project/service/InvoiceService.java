@@ -14,4 +14,6 @@ public interface InvoiceService {
     void updateInvoice(InvoiceDTO invoiceDTO);
 
     void deleteInvoice(Long invoiceId);
+
+    List<InvoiceDTO> getMyInvoices(String username);
 }

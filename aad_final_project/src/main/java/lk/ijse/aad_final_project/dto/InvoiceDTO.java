@@ -21,4 +21,7 @@ public class InvoiceDTO {
     private Double balance;
     private InvoiceStatus status;
     private Long rentalId;
+    private Long paymentId;
+    private Long customerId;
+    private String customerName;
 }

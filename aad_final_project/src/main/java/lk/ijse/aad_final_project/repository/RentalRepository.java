@@ -10,4 +10,6 @@ import java.util.List;
 public interface RentalRepository extends JpaRepository<Rental,Long> {
 
     List<Rental> findByCustomer_User_UserId(Long userId);
+
+    List<Rental> findByCustomer_User_Username(String username);
 }

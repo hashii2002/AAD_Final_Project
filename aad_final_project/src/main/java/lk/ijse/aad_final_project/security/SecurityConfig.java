@@ -121,6 +121,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/v1/payment/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/v1/payment/me").hasRole("CUSTOMER")
 
+                        // Invoice APIs
+                        .requestMatchers(HttpMethod.POST, "/v1/invoice/save").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/invoice/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/invoice/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/v1/invoice/update").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/invoice/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/v1/invoice/me").hasRole("CUSTOMER")
+
                         .anyRequest().authenticated()
 
                 )
