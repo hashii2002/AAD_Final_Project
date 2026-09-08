@@ -129,6 +129,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/v1/invoice/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/v1/invoice/me").hasRole("CUSTOMER")
 
+                        // Vehicle Inspection APIs
+                        .requestMatchers("/v1/vehicle-inspection/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+
                         .anyRequest().authenticated()
 
                 )
