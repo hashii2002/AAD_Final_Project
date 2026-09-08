@@ -14,6 +14,7 @@ import lk.ijse.aad_final_project.service.VehicleInspectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,9 +53,13 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
             throw new RuntimeException("Only Admin or Fleet Manager can perform vehicle inspection");
         }
 
+        if (!rental.getVehicle().getVehicleId().equals(vehicle.getVehicleId())) {
+            throw new RuntimeException("Selected vehicle does not belong to this rental");
+        }
+
         VehicleInspection vehicleInspection = new VehicleInspection();
         vehicleInspection.setInspectionType(vehicleInspectionDTO.getInspectionType());
-        vehicleInspection.setInspectionDate(vehicleInspectionDTO.getInspectionDate());
+        vehicleInspection.setInspectionDate(vehicleInspectionDTO.getInspectionDate() != null ? vehicleInspectionDTO.getInspectionDate() : LocalDateTime.now());
         vehicleInspection.setFuelLevel(vehicleInspectionDTO.getFuelLevel());
         vehicleInspection.setMileage(vehicleInspectionDTO.getMileage());
         vehicleInspection.setNotes(vehicleInspectionDTO.getNotes());
@@ -116,16 +121,38 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     public void updateVehicleInspection(VehicleInspectionDTO vehicleInspectionDTO) {
         Optional<VehicleInspection> optionalInspection = vehicleInspectionRepository.findById(vehicleInspectionDTO.getInspectionId());
-
         if (optionalInspection.isEmpty()) {
             throw new RuntimeException("Vehicle inspection not found");
         }
 
         VehicleInspection inspection = optionalInspection.get();
 
-        RoleName roleName = inspection.getInspectedBy().getRole().getRoleName();
+        Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleInspectionDTO.getVehicleId());
+        if (optionalVehicle.isEmpty()) {
+            throw new RuntimeException("Vehicle not found");
+        }
+
+        Optional<Rental> optionalRental = rentalRepository.findById(vehicleInspectionDTO.getRentalId());
+        if (optionalRental.isEmpty()) {
+            throw new RuntimeException("Rental not found");
+        }
+
+        Optional<User> optionalUser = userRepository.findById(vehicleInspectionDTO.getInspectedById());
+        if (optionalUser.isEmpty()) {
+            throw new RuntimeException("Inspector user not found");
+        }
+
+        Vehicle vehicle = optionalVehicle.get();
+        Rental rental = optionalRental.get();
+        User inspectedBy = optionalUser.get();
+
+        RoleName roleName = inspectedBy.getRole().getRoleName();
         if (roleName != RoleName.ADMIN && roleName != RoleName.FLEET_MANAGER) {
             throw new RuntimeException("Only Admin or Fleet Manager can perform vehicle inspection");
+        }
+
+        if (!rental.getVehicle().getVehicleId().equals(vehicle.getVehicleId())) {
+            throw new RuntimeException("Selected vehicle does not belong to this rental");
         }
 
         inspection.setInspectionType(vehicleInspectionDTO.getInspectionType());
@@ -133,6 +160,9 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
         inspection.setFuelLevel(vehicleInspectionDTO.getFuelLevel());
         inspection.setMileage(vehicleInspectionDTO.getMileage());
         inspection.setNotes(vehicleInspectionDTO.getNotes());
+        inspection.setVehicle(vehicle);
+        inspection.setRental(rental);
+        inspection.setInspectedBy(inspectedBy);
 
         vehicleInspectionRepository.save(inspection);
 
@@ -144,8 +174,6 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
         if (!vehicleInspectionRepository.existsById(inspectionId)) {
             throw new RuntimeException("Vehicle inspection not found");
         }
-
         vehicleInspectionRepository.deleteById(inspectionId);
-
     }
 }
