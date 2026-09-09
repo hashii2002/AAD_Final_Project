@@ -4,6 +4,7 @@ import lk.ijse.aad_final_project.dto.ReviewDTO;
 import lk.ijse.aad_final_project.entity.Customer;
 import lk.ijse.aad_final_project.entity.Rental;
 import lk.ijse.aad_final_project.entity.Review;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.CustomerRepository;
 import lk.ijse.aad_final_project.repository.RentalRepository;
 import lk.ijse.aad_final_project.repository.ReviewRepository;
@@ -36,14 +37,14 @@ public class ReviewServiceImpl implements ReviewService {
 
         Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
         if (optionalCustomer.isEmpty()) {
-            throw new RuntimeException("Customer not found");
+            throw new NotFoundException("Customer not found");
         }
 
         Customer customer = optionalCustomer.get();
 
         Optional<Rental> optionalRental = rentalRepository.findById(reviewDTO.getRentalId());
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
 
         Rental rental = optionalRental.get();
@@ -89,7 +90,7 @@ public class ReviewServiceImpl implements ReviewService {
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
 
         if (optionalReview.isEmpty()) {
-            throw new RuntimeException("Review not found");
+            throw new NotFoundException("Review not found");
         }
         return mapToDTO(optionalReview.get());
     }
@@ -103,7 +104,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         Optional<Review> optionalReview = reviewRepository.findById(reviewDTO.getReviewId());
         if (optionalReview.isEmpty()) {
-            throw new RuntimeException("Review not found");
+            throw new NotFoundException("Review not found");
         }
 
         Review review = optionalReview.get();
@@ -111,7 +112,7 @@ public class ReviewServiceImpl implements ReviewService {
         Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
 
         if (optionalCustomer.isEmpty()) {
-            throw new RuntimeException("Customer not found");
+            throw new NotFoundException("Customer not found");
         }
 
         Customer customer = optionalCustomer.get();
@@ -136,7 +137,7 @@ public class ReviewServiceImpl implements ReviewService {
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
 
         if (optionalReview.isEmpty()) {
-            throw new RuntimeException("Review not found");
+            throw new NotFoundException("Review not found");
         }
 
         Review review = optionalReview.get();
@@ -148,7 +149,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
         if (optionalCustomer.isEmpty()) {
-            throw new RuntimeException("Customer not found");
+            throw new NotFoundException("Customer not found");
         }
 
         Customer customer = optionalCustomer.get();
