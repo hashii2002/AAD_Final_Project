@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.RentalRateDTO;
 import lk.ijse.aad_final_project.entity.RentalRate;
 import lk.ijse.aad_final_project.entity.VehicleCategory;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.RentalRateRepository;
 import lk.ijse.aad_final_project.repository.VehicleCategoryRepository;
 import lk.ijse.aad_final_project.service.RentalRateService;
@@ -23,9 +24,8 @@ public class RentalRateServiceImpl implements RentalRateService {
     @Override
     public void saveRentalRate(RentalRateDTO rentalRateDTO) {
         Optional<VehicleCategory> optionalCategory = vehicleCategoryRepository.findById(rentalRateDTO.getCategoryId());
-
         if (optionalCategory.isEmpty()) {
-            throw new RuntimeException("Vehicle category not found");
+            throw new NotFoundException("Vehicle category not found");
         }
 
         VehicleCategory vehicleCategory = optionalCategory.get();
@@ -69,7 +69,7 @@ public class RentalRateServiceImpl implements RentalRateService {
         Optional<RentalRate> optionalRentalRate = rentalRateRepository.findById(rateId);
 
         if (optionalRentalRate.isEmpty()) {
-            throw new RuntimeException("Rental rate not found");
+            throw new NotFoundException("Rental rate not found");
         }
 
         RentalRate rentalRate = optionalRentalRate.get();
@@ -91,13 +91,13 @@ public class RentalRateServiceImpl implements RentalRateService {
         Optional<RentalRate> optionalRentalRate = rentalRateRepository.findById(rentalRateDTO.getRateId());
 
         if (optionalRentalRate.isEmpty()) {
-            throw new RuntimeException("Rental rate not found");
+            throw new NotFoundException("Rental rate not found");
         }
 
         Optional<VehicleCategory> optionalCategory = vehicleCategoryRepository.findById(rentalRateDTO.getCategoryId());
 
         if (optionalCategory.isEmpty()) {
-            throw new RuntimeException("Vehicle category not found");
+            throw new NotFoundException("Vehicle category not found");
         }
 
         RentalRate rentalRate = optionalRentalRate.get();
@@ -117,7 +117,7 @@ public class RentalRateServiceImpl implements RentalRateService {
     public void deleteRentalRate(Long rateId) {
 
         if (!rentalRateRepository.existsById(rateId)) {
-            throw new RuntimeException("Rental rate not found");
+            throw new NotFoundException("Rental rate not found");
         }
 
         rentalRateRepository.deleteById(rateId);
