@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.DriverDTO;
 import lk.ijse.aad_final_project.entity.Driver;
 import lk.ijse.aad_final_project.entity.User;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.DriverRepository;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.service.DriverService;
@@ -22,11 +23,10 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public void saveDriver(DriverDTO driverDTO) {
-        Optional<User> optionalUser =
-                userRepository.findById(driverDTO.getUserId());
+        Optional<User> optionalUser = userRepository.findById(driverDTO.getUserId());
 
         if (optionalUser.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new NotFoundException("User not found");
         }
 
         User user = optionalUser.get();
@@ -43,7 +43,6 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public List<DriverDTO> getAllDrivers() {
         List<Driver> drivers = driverRepository.findAll();
-
         List<DriverDTO> driverDTOList = new ArrayList<>();
 
         for (Driver driver : drivers) {
@@ -67,7 +66,7 @@ public class DriverServiceImpl implements DriverService {
                 driverRepository.findById(driverId);
 
         if (optionalDriver.isEmpty()) {
-            throw new RuntimeException("Driver not found");
+            throw new NotFoundException("Driver not found");
         }
 
         Driver driver = optionalDriver.get();
@@ -89,7 +88,7 @@ public class DriverServiceImpl implements DriverService {
                 driverRepository.findById(driverDTO.getDriverId());
 
         if (optionalDriver.isEmpty()) {
-            throw new RuntimeException("Driver not found");
+            throw new NotFoundException("Driver not found");
         }
 
         Driver driver = optionalDriver.get();
@@ -102,11 +101,9 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public void deleteDriver(Long driverId) {
-
         if (!driverRepository.existsById(driverId)) {
-            throw new RuntimeException("Driver not found");
+            throw new NotFoundException("Driver not found");
         }
-
         driverRepository.deleteById(driverId);
     }
 
@@ -116,7 +113,7 @@ public class DriverServiceImpl implements DriverService {
         Optional<Driver> optionalDriver = driverRepository.findByUser_Username(username);
 
         if (optionalDriver.isEmpty()) {
-            throw new RuntimeException("Driver not found");
+            throw new NotFoundException("Driver not found");
         }
 
         Driver driver = optionalDriver.get();
