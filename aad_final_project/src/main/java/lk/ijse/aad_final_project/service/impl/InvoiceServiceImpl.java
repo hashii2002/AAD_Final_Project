@@ -6,6 +6,9 @@ import lk.ijse.aad_final_project.entity.Payment;
 import lk.ijse.aad_final_project.entity.Rental;
 import lk.ijse.aad_final_project.enums.InvoiceStatus;
 import lk.ijse.aad_final_project.enums.PaymentStatus;
+import lk.ijse.aad_final_project.exception.DuplicateException;
+import lk.ijse.aad_final_project.exception.NotFoundException;
+import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.InvoiceRepository;
 import lk.ijse.aad_final_project.repository.PaymentRepository;
 import lk.ijse.aad_final_project.repository.RentalRepository;
@@ -31,13 +34,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         Optional<Rental> optionalRental = rentalRepository.findById(invoiceDTO.getRentalId());
 
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
         Rental rental = optionalRental.get();
 
         // One invoice per rental
         if (invoiceRepository.findByRental_RentalId(rental.getRentalId()).isPresent()) {
-            throw new RuntimeException("Invoice already exists for this rental");
+            throw new DuplicateException("Invoice already exists for this rental");
         }
 
         Invoice invoice = new Invoice();
@@ -47,11 +50,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         double discount = invoiceDTO.getDiscount() != null ? invoiceDTO.getDiscount() : 0.0;
 
         if (discount < 0) {
-            throw new RuntimeException("Discount cannot be negative");
+            throw new ValidationException("Discount cannot be negative");
         }
 
         if (discount > subTotal) {
-            throw new RuntimeException("Discount cannot be greater than subtotal");
+            throw new ValidationException("Discount cannot be greater than subtotal");
         }
 
         double totalAmount = subTotal - discount;
@@ -76,14 +79,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public List<InvoiceDTO> getAllInvoices() {
-
         List<Invoice> invoices = invoiceRepository.findAll();
         List<InvoiceDTO> invoiceDTOList = new ArrayList<>();
 
         for (Invoice invoice : invoices) {
             invoiceDTOList.add(mapToDTO(invoice));
         }
-
         return invoiceDTOList;
     }
 
@@ -93,7 +94,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
 
         if (optionalInvoice.isEmpty()) {
-            throw new RuntimeException("Invoice not found");
+            throw new NotFoundException("Invoice not found");
         }
 
         return mapToDTO(optionalInvoice.get());
@@ -103,14 +104,13 @@ public class InvoiceServiceImpl implements InvoiceService {
     public void updateInvoice(InvoiceDTO invoiceDTO) {
 
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceDTO.getInvoiceId());
-
         if (optionalInvoice.isEmpty()) {
-            throw new RuntimeException("Invoice not found");
+            throw new NotFoundException("Invoice not found");
         }
         Invoice invoice = optionalInvoice.get();
 
         if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
-            throw new RuntimeException("Cancelled invoice cannot be updated");
+            throw new ValidationException("Cancelled invoice cannot be updated");
         }
 
         Rental rental = invoice.getRental();
@@ -118,11 +118,10 @@ public class InvoiceServiceImpl implements InvoiceService {
         double discount = invoiceDTO.getDiscount() != null ? invoiceDTO.getDiscount() : 0.0;
 
         if (discount < 0) {
-            throw new RuntimeException("Discount cannot be negative");
+            throw new ValidationException("Discount cannot be negative");
         }
-
         if (discount > subTotal) {
-            throw new RuntimeException("Discount cannot be greater than subtotal");
+            throw new ValidationException("Discount cannot be greater than subtotal");
         }
 
         double totalAmount = subTotal - discount;
@@ -147,15 +146,14 @@ public class InvoiceServiceImpl implements InvoiceService {
     public void deleteInvoice(Long invoiceId) {
 
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
-
         if (optionalInvoice.isEmpty()) {
-            throw new RuntimeException("Invoice not found");
+            throw new NotFoundException("Invoice not found");
         }
 
         Invoice invoice = optionalInvoice.get();
 
         if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
-            throw new RuntimeException("Invoice is already cancelled");
+            throw new ValidationException("Invoice is already cancelled");
         }
 
         invoice.setStatus(InvoiceStatus.CANCELLED);
@@ -188,21 +186,17 @@ public class InvoiceServiceImpl implements InvoiceService {
                 totalPaid += payment.getAmount();
             }
         }
-
         return totalPaid;
     }
-
 
     private InvoiceStatus calculateInvoiceStatus(double totalPaid, double balance) {
 
         if (balance <= 0) {
             return InvoiceStatus.PAID;
         }
-
         if (totalPaid > 0) {
             return InvoiceStatus.PARTIALLY_PAID;
         }
-
         return InvoiceStatus.ISSUED;
     }
 
@@ -236,7 +230,6 @@ public class InvoiceServiceImpl implements InvoiceService {
                 dto.setPaymentId(payment.getPaymentId());
             }
         }
-
         return dto;
     }
 }
