@@ -2,6 +2,7 @@ package lk.ijse.aad_final_project.service.impl;
 
 import lk.ijse.aad_final_project.dto.RoleDTO;
 import lk.ijse.aad_final_project.entity.Role;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.RoleRepository;
 import lk.ijse.aad_final_project.service.RoleService;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class RoleServiceImpl implements RoleService {
         Optional<Role> optionalRole = roleRepository.findById(roleId);
 
         if (optionalRole.isEmpty()) {
-            throw new RuntimeException("Role not found");
+            throw new NotFoundException("Role not found");
         }
 
         Role role = optionalRole.get();
@@ -67,7 +68,7 @@ public class RoleServiceImpl implements RoleService {
                 roleRepository.findById(roleDTO.getRoleId());
 
         if (optionalRole.isEmpty()) {
-            throw new RuntimeException("Role not found");
+            throw new NotFoundException("Role not found");
         }
 
         Role role = optionalRole.get();
@@ -82,7 +83,7 @@ public class RoleServiceImpl implements RoleService {
     public void deleteRole(Long roleId) {
 
         if (!roleRepository.existsById(roleId)) {
-            throw new RuntimeException("Role not found");
+            throw new NotFoundException("Role not found");
         }
 
         roleRepository.deleteById(roleId);

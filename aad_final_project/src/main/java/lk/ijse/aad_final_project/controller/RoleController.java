@@ -4,7 +4,9 @@ import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.RoleDTO;
 import lk.ijse.aad_final_project.service.RoleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,33 +20,42 @@ public class RoleController {
     private final RoleService roleService;
 
     @PostMapping(value = "/save-role", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse saveRole(@RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<CommonResponse> saveRole(@RequestBody RoleDTO roleDTO) {
         roleService.saveRole(roleDTO);
+        CommonResponse response = new CommonResponse(0, "Role Saved Successfully");
 
-        return new CommonResponse(0, "Role Saved Successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getAllRoles() {
+    public ResponseEntity<CommonResponse> getAllRoles() {
         List<RoleDTO> allRoles = roleService.getAllRoles();
-        return new CommonResponse(0, allRoles, "Get All Roles API Successful");
+        CommonResponse response = new CommonResponse(0, allRoles, "Get All Roles API Successful");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/select/{roleId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse selectRole(@PathVariable Long roleId) {
+    public ResponseEntity<CommonResponse> selectRole(@PathVariable Long roleId) {
         RoleDTO roleDTO = roleService.selectRole(roleId);
-        return new CommonResponse(0, roleDTO, "Role Selected Successfully");
+        CommonResponse response = new CommonResponse(0, roleDTO, "Role Selected Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse updateRole(@RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<CommonResponse> updateRole(@RequestBody RoleDTO roleDTO) {
         roleService.updateRole(roleDTO);
-        return new CommonResponse(0, "Role Updated Successfully");
+        CommonResponse response = new CommonResponse(0, "Role Updated Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping(value = "/{roleId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse deleteRole(@PathVariable Long roleId) {
+    public ResponseEntity<CommonResponse> deleteRole(@PathVariable Long roleId) {
         roleService.deleteRole(roleId);
-        return new CommonResponse(0, "Role Deleted Successfully");
+        CommonResponse response = new CommonResponse(0, "Role Deleted Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
