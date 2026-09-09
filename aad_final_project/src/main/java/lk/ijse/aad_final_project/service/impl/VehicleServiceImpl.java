@@ -4,6 +4,7 @@ import lk.ijse.aad_final_project.dto.VehicleDTO;
 import lk.ijse.aad_final_project.entity.Vehicle;
 import lk.ijse.aad_final_project.entity.VehicleCategory;
 import lk.ijse.aad_final_project.entity.VehicleModel;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.VehicleCategoryRepository;
 import lk.ijse.aad_final_project.repository.VehicleModelRepository;
 import lk.ijse.aad_final_project.repository.VehicleRepository;
@@ -26,13 +27,12 @@ public class VehicleServiceImpl implements VehicleService {
     public void saveVehicle(VehicleDTO vehicleDTO) {Optional<VehicleModel> optionalModel = vehicleModelRepository.findById(vehicleDTO.getModelId());
 
         if (optionalModel.isEmpty()) {
-            throw new RuntimeException("Vehicle model not found");
+            throw new NotFoundException("Vehicle model not found");
         }
 
         Optional<VehicleCategory> optionalCategory = vehicleCategoryRepository.findById(vehicleDTO.getCategoryId());
-
         if (optionalCategory.isEmpty()) {
-            throw new RuntimeException("Vehicle category not found");
+            throw new NotFoundException("Vehicle category not found");
         }
 
         VehicleModel vehicleModel = optionalModel.get();
@@ -79,9 +79,8 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleDTO selectVehicle(Long vehicleId) {
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleId);
-
         if (optionalVehicle.isEmpty()) {
-            throw new RuntimeException("Vehicle not found");
+            throw new NotFoundException("Vehicle not found");
         }
 
         Vehicle vehicle = optionalVehicle.get();
@@ -102,21 +101,18 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public void updateVehicle(VehicleDTO vehicleDTO) {
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleDTO.getVehicleId());
-
         if (optionalVehicle.isEmpty()) {
-            throw new RuntimeException("Vehicle not found");
+            throw new NotFoundException("Vehicle not found");
         }
 
         Optional<VehicleModel> optionalModel = vehicleModelRepository.findById(vehicleDTO.getModelId());
-
         if (optionalModel.isEmpty()) {
-            throw new RuntimeException("Vehicle model not found");
+            throw new NotFoundException("Vehicle model not found");
         }
 
         Optional<VehicleCategory> optionalCategory = vehicleCategoryRepository.findById(vehicleDTO.getCategoryId());
-
         if (optionalCategory.isEmpty()) {
-            throw new RuntimeException("Vehicle category not found");
+            throw new NotFoundException("Vehicle category not found");
         }
 
         Vehicle vehicle = optionalVehicle.get();
@@ -137,11 +133,9 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public void deleteVehicle(Long vehicleId) {
-
         if (!vehicleRepository.existsById(vehicleId)) {
-            throw new RuntimeException("Vehicle not found");
+            throw new NotFoundException("Vehicle not found");
         }
-
         vehicleRepository.deleteById(vehicleId);
 
     }
