@@ -5,7 +5,9 @@ import lk.ijse.aad_final_project.dto.RentalDTO;
 import lk.ijse.aad_final_project.dto.RentalDriverDTO;
 import lk.ijse.aad_final_project.service.RentalDriverService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,40 +22,51 @@ public class RentalDriverController {
     private final RentalDriverService rentalDriverService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse saveRentalDriver(@RequestBody RentalDriverDTO rentalDriverDTO) {
+    public ResponseEntity<CommonResponse> saveRentalDriver(@RequestBody RentalDriverDTO rentalDriverDTO) {
         rentalDriverService.saveRentalDriver(rentalDriverDTO);
-        return new CommonResponse(0, "Rental Driver Saved Successfully");
+        CommonResponse response = new CommonResponse(0, "Rental Driver Saved Successfully");
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getAllRentalDrivers() {
+    public ResponseEntity<CommonResponse> getAllRentalDrivers() {
         List<RentalDriverDTO> rentalDrivers = rentalDriverService.getAllRentalDrivers();
-        return new CommonResponse(0, rentalDrivers, "Get All Rental Drivers Successful");
+        CommonResponse response = new CommonResponse(0, rentalDrivers, "Get All Rental Drivers Successful");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/select/{rentalDriverId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse selectRentalDriver(@PathVariable Long rentalDriverId) {
+    public ResponseEntity<CommonResponse> selectRentalDriver(@PathVariable Long rentalDriverId) {
         RentalDriverDTO rentalDriverDTO = rentalDriverService.selectRentalDriver(rentalDriverId);
-        return new CommonResponse(0, rentalDriverDTO, "Rental Driver Selected Successfully");
+        CommonResponse response = new CommonResponse(0, rentalDriverDTO, "Rental Driver Selected Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse updateRentalDriver(@RequestBody RentalDriverDTO rentalDriverDTO) {
+    public ResponseEntity<CommonResponse> updateRentalDriver(@RequestBody RentalDriverDTO rentalDriverDTO) {
         rentalDriverService.updateRentalDriver(rentalDriverDTO);
-        return new CommonResponse(0, "Rental Driver Updated Successfully");
+        CommonResponse response = new CommonResponse(0, "Rental Driver Updated Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getMyRentals(Authentication authentication) {
+    public ResponseEntity<CommonResponse> getMyRentals(Authentication authentication) {
         String username = authentication.getName();
         List<RentalDTO> rentalDTOList = rentalDriverService.getMyRentals(username);
-        return new CommonResponse(0, rentalDTOList, "My Assigned Rentals Retrieved Successfully");
+        CommonResponse response = new CommonResponse(0, rentalDTOList, "My Assigned Rentals Retrieved Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping(value = "/{rentalDriverId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse deleteRentalDriver(@PathVariable Long rentalDriverId) {
+    public ResponseEntity<CommonResponse> deleteRentalDriver(@PathVariable Long rentalDriverId) {
         rentalDriverService.deleteRentalDriver(rentalDriverId);
-        return new CommonResponse(0, "Rental Driver Deleted Successfully");
-    }
+        CommonResponse response = new CommonResponse(0, "Rental Driver Deleted Successfully");
 
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

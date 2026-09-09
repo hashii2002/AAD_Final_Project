@@ -5,6 +5,7 @@ import lk.ijse.aad_final_project.dto.RentalDriverDTO;
 import lk.ijse.aad_final_project.entity.Driver;
 import lk.ijse.aad_final_project.entity.Rental;
 import lk.ijse.aad_final_project.entity.RentalDriver;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.DriverRepository;
 import lk.ijse.aad_final_project.repository.RentalDriverRepository;
 import lk.ijse.aad_final_project.repository.RentalRepository;
@@ -29,13 +30,13 @@ public class RentalDriverServiceImpl implements RentalDriverService {
         Optional<Rental> optionalRental = rentalRepository.findById(rentalDriverDTO.getRentalId());
 
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
 
         Optional<Driver> optionalDriver = driverRepository.findById(rentalDriverDTO.getDriverId());
 
         if (optionalDriver.isEmpty()) {
-            throw new RuntimeException("Driver not found");
+            throw new NotFoundException("Driver not found");
         }
 
         Rental rental = optionalRental.get();
@@ -68,7 +69,7 @@ public class RentalDriverServiceImpl implements RentalDriverService {
         Optional<RentalDriver> optionalRentalDriver = rentalDriverRepository.findById(rentalDriverId);
 
         if (optionalRentalDriver.isEmpty()) {
-            throw new RuntimeException("Rental driver not found");
+            throw new NotFoundException("Rental driver not found");
         }
 
         RentalDriver rentalDriver = optionalRentalDriver.get();
@@ -81,19 +82,19 @@ public class RentalDriverServiceImpl implements RentalDriverService {
         Optional<RentalDriver> optionalRentalDriver = rentalDriverRepository.findById(rentalDriverDTO.getRentalDriverId());
 
         if (optionalRentalDriver.isEmpty()) {
-            throw new RuntimeException("Rental driver not found");
+            throw new NotFoundException("Rental driver not found");
         }
 
         Optional<Rental> optionalRental = rentalRepository.findById(rentalDriverDTO.getRentalId());
 
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
 
         Optional<Driver> optionalDriver = driverRepository.findById(rentalDriverDTO.getDriverId());
 
         if (optionalDriver.isEmpty()) {
-            throw new RuntimeException("Driver not found");
+            throw new NotFoundException("Driver not found");
         }
 
         RentalDriver rentalDriver = optionalRentalDriver.get();
@@ -109,9 +110,8 @@ public class RentalDriverServiceImpl implements RentalDriverService {
 
     @Override
     public void deleteRentalDriver(Long rentalDriverId) {
-
         if (!rentalDriverRepository.existsById(rentalDriverId)) {
-            throw new RuntimeException("Rental driver not found");
+            throw new NotFoundException("Rental driver not found");
         }
 
         rentalDriverRepository.deleteById(rentalDriverId);
