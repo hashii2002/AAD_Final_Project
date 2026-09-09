@@ -7,7 +7,9 @@ import lk.ijse.aad_final_project.dto.UserDataDTO;
 import lk.ijse.aad_final_project.security.JwtUtil;
 import lk.ijse.aad_final_project.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,10 +23,8 @@ public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
 
-
-    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public CommonResponse login(@RequestBody AuthDTO authDTO) {
+    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommonResponse> login(@RequestBody AuthDTO authDTO) {
 
         UserDTO userDetails = userService.getUserDetails(authDTO.getUsername(), authDTO.getPassword());
 
@@ -37,49 +37,49 @@ public class UserController {
         String token = jwtUtil.generateToken(userDataDTO);
         userDataDTO.setToken(token);
 
-        return new CommonResponse(0,userDataDTO, "Login Successful");
+        CommonResponse response = new CommonResponse(0, userDataDTO, "Login Successful");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse saveUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<CommonResponse> saveUser(@RequestBody UserDTO userDTO) {
 
         userService.saveUser(userDTO);
 
-        return new CommonResponse(0, "User Saved Successfully");
+        CommonResponse response = new CommonResponse(0, "User Saved Successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getAllUsers() {
+    public ResponseEntity<CommonResponse> getAllUsers() {
 
         List<UserDTO> allUsers = userService.getAllUsers();
 
-        return new CommonResponse(0, allUsers, "Get All Users API Successful"
-        );
+        CommonResponse response = new CommonResponse(0, allUsers, "Get All Users API Successful");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
 
     @GetMapping(value = "/select/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse selectUser(@PathVariable Long userId) {
+    public ResponseEntity<CommonResponse> selectUser(@PathVariable Long userId) {
 
         UserDTO userDTO = userService.selectUser(userId);
-        return new CommonResponse(0, userDTO, "User Selected Successfully");
+        CommonResponse response = new CommonResponse(0, userDTO, "User Selected Successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse updateUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<CommonResponse> updateUser(@RequestBody UserDTO userDTO) {
 
         userService.updateUser(userDTO);
-        return new CommonResponse(0, "User Updated Successfully");
+        CommonResponse response = new CommonResponse(0, "User Updated Successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-
     @DeleteMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse deleteUser(@PathVariable Long userId) {
+    public ResponseEntity<CommonResponse> deleteUser(@PathVariable Long userId) {
 
         userService.deleteUser(userId);
-        return new CommonResponse(0, "User Deleted Successfully");
+        CommonResponse response = new CommonResponse(0, "User Deleted Successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

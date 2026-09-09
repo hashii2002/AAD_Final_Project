@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.UserDTO;
 import lk.ijse.aad_final_project.entity.Role;
 import lk.ijse.aad_final_project.entity.User;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.RoleRepository;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.service.UserService;
@@ -24,11 +25,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void saveUser(UserDTO userDTO) {
-        Optional<Role> optionalRole =
-                roleRepository.findById(userDTO.getRoleId());
-
+        Optional<Role> optionalRole = roleRepository.findById(userDTO.getRoleId());
         if (optionalRole.isEmpty()) {
-            throw new RuntimeException("Role not found");
+            throw new NotFoundException("Role not found");
         }
 
         Role role = optionalRole.get();
@@ -79,7 +78,7 @@ public class UserServiceImpl implements UserService {
                 userRepository.findById(userId);
 
         if (optionalUser.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new NotFoundException("User not found");
         }
 
         User user = optionalUser.get();
@@ -100,18 +99,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(UserDTO userDTO) {
-        Optional<User> optionalUser =
-                userRepository.findById(userDTO.getUserId());
-
+        Optional<User> optionalUser = userRepository.findById(userDTO.getUserId());
         if (optionalUser.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new NotFoundException("User not found");
         }
 
-        Optional<Role> optionalRole =
-                roleRepository.findById(userDTO.getRoleId());
-
+        Optional<Role> optionalRole = roleRepository.findById(userDTO.getRoleId());
         if (optionalRole.isEmpty()) {
-            throw new RuntimeException("Role not found");
+            throw new NotFoundException("Role not found");
         }
 
         User user = optionalUser.get();
@@ -136,9 +131,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new RuntimeException("User not found");
+            throw new NotFoundException("User not found");
         }
-
         userRepository.deleteById(userId);
     }
 
@@ -146,17 +140,13 @@ public class UserServiceImpl implements UserService {
     public UserDTO getUserDetails(String username, String password) {
 
         Optional<User> optionalUser = userRepository.findByUsername(username);
-
         if (optionalUser.isEmpty()) {
-            throw new RuntimeException("Invalid username or password");
+            throw new NotFoundException("Invalid username or password");
         }
 
         User user = optionalUser.get();
-
         if (!passwordEncoder.matches(password, user.getPassword())) {
-
-            throw new RuntimeException("Invalid username or password"
-            );
+            throw new RuntimeException("Invalid username or password");
         }
 
         UserDTO userDTO = new UserDTO();
