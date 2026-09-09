@@ -6,6 +6,8 @@ import lk.ijse.aad_final_project.entity.Payment;
 import lk.ijse.aad_final_project.entity.Rental;
 import lk.ijse.aad_final_project.enums.InvoiceStatus;
 import lk.ijse.aad_final_project.enums.PaymentStatus;
+import lk.ijse.aad_final_project.exception.NotFoundException;
+import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.InvoiceRepository;
 import lk.ijse.aad_final_project.repository.PaymentRepository;
 import lk.ijse.aad_final_project.repository.RentalRepository;
@@ -30,22 +32,22 @@ public class PaymentServiceImpl implements PaymentService {
 
         Optional<Rental> optionalRental = rentalRepository.findById(paymentDTO.getRentalId());
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
         Rental rental = optionalRental.get();
 
         Optional<Invoice> optionalInvoice = invoiceRepository.findByRental_RentalId(rental.getRentalId());
         if (optionalInvoice.isEmpty()) {
-            throw new RuntimeException("Invoice not found for this rental");
+            throw new NotFoundException("Invoice not found for this rental");
         }
         Invoice invoice = optionalInvoice.get();
 
         if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
-            throw new RuntimeException("Cannot make payment for cancelled invoice");
+            throw new ValidationException("Cannot make payment for cancelled invoice");
         }
 
         if (paymentDTO.getAmount() == null || paymentDTO.getAmount() <= 0) {
-            throw new RuntimeException("Payment amount must be greater than zero");
+            throw new ValidationException("Payment amount must be greater than zero");
         }
 
         Payment payment = new Payment();
@@ -80,7 +82,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         Optional<Payment> optionalPayment = paymentRepository.findById(paymentId);
         if (optionalPayment.isEmpty()) {
-            throw new RuntimeException("Payment not found");
+            throw new NotFoundException("Payment not found");
         }
         return mapToDTO(optionalPayment.get());
     }
@@ -90,12 +92,12 @@ public class PaymentServiceImpl implements PaymentService {
 
         Optional<Payment> optionalPayment = paymentRepository.findById(paymentDTO.getPaymentId());
         if (optionalPayment.isEmpty()) {
-            throw new RuntimeException("Payment not found");
+            throw new NotFoundException("Payment not found");
         }
 
         Optional<Rental> optionalRental = rentalRepository.findById(paymentDTO.getRentalId());
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
 
         Payment payment = optionalPayment.get();
@@ -103,11 +105,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         Optional<Invoice> optionalInvoice = invoiceRepository.findByRental_RentalId(rental.getRentalId());
         if (optionalInvoice.isEmpty()) {
-            throw new RuntimeException("Invoice not found for this rental");
+            throw new NotFoundException("Invoice not found for this rental");
         }
 
         if (paymentDTO.getAmount() == null || paymentDTO.getAmount() <= 0) {
-            throw new RuntimeException("Payment amount must be greater than zero");
+            throw new ValidationException("Payment amount must be greater than zero");
         }
 
         payment.setPaymentReference(paymentDTO.getPaymentReference());
@@ -128,13 +130,13 @@ public class PaymentServiceImpl implements PaymentService {
 
         Optional<Payment> optionalPayment = paymentRepository.findById(paymentId);
         if (optionalPayment.isEmpty()) {
-            throw new RuntimeException("Payment not found");
+            throw new NotFoundException("Payment not found");
         }
 
         Payment payment = optionalPayment.get();
 
         if (payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
-            throw new RuntimeException("Payment is already refunded");
+            throw new ValidationException("Payment is already refunded");
         }
 
         payment.setPaymentStatus(PaymentStatus.REFUNDED);
