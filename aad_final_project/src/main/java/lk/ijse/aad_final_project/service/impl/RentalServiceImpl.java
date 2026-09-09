@@ -4,6 +4,8 @@ import lk.ijse.aad_final_project.dto.RentalDTO;
 import lk.ijse.aad_final_project.entity.*;
 import lk.ijse.aad_final_project.enums.DriverOption;
 import lk.ijse.aad_final_project.enums.RentalStatus;
+import lk.ijse.aad_final_project.exception.NotFoundException;
+import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.*;
 import lk.ijse.aad_final_project.service.RentalService;
 import lombok.RequiredArgsConstructor;
@@ -31,17 +33,17 @@ public class RentalServiceImpl implements RentalService {
     public void saveRental(RentalDTO rentalDTO) {
         Optional<Customer> optionalCustomer = customerRepository.findById(rentalDTO.getCustomerId());
         if (optionalCustomer.isEmpty()) {
-            throw new RuntimeException("Customer not found");
+            throw new NotFoundException("Customer not found");
         }
 
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(rentalDTO.getVehicleId());
         if (optionalVehicle.isEmpty()) {
-            throw new RuntimeException("Vehicle not found");
+            throw new NotFoundException("Vehicle not found");
         }
 
         Optional<RentalRate> optionalRentalRate = rentalRateRepository.findById(rentalDTO.getRentalRateId());
         if (optionalRentalRate.isEmpty()) {
-            throw new RuntimeException("Rental rate not found");
+            throw new NotFoundException("Rental rate not found");
         }
 
         Customer customer = optionalCustomer.get();
@@ -51,7 +53,7 @@ public class RentalServiceImpl implements RentalService {
         // ------------ Rental Days Auto Calculation ----------------
         long calculatedDays = java.time.Duration.between(rentalDTO.getStartDate(), rentalDTO.getEndDate()).toDays();
         if (calculatedDays <= 0) {
-            throw new RuntimeException("Invalid rental duration. End date must be after start date.");
+            throw new ValidationException("Invalid rental duration. End date must be after start date.");
         }
         int rentalDays = (int) calculatedDays;
 
@@ -80,10 +82,10 @@ public class RentalServiceImpl implements RentalService {
 
         if (DriverOption.WITH_DRIVER.equals(driverOption)) {
             if (rentalDTO.getDriverId() == null) {
-                throw new RuntimeException("Driver ID is required when WITH_DRIVER option is selected");
+                throw new ValidationException("Driver ID is required when WITH_DRIVER option is selected");
             }
 
-            Driver driver = driverRepository.findById(rentalDTO.getDriverId()).orElseThrow(() -> new RuntimeException("Driver not found"));
+            Driver driver = driverRepository.findById(rentalDTO.getDriverId()).orElseThrow(() -> new NotFoundException("Driver not found"));
 
             RentalDriver rentalDriver = new RentalDriver();
             rentalDriver.setRental(savedRental);
@@ -144,7 +146,7 @@ public class RentalServiceImpl implements RentalService {
         Optional<Rental> optionalRental = rentalRepository.findById(rentalId);
 
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
 
         Rental rental = optionalRental.get();
@@ -175,21 +177,21 @@ public class RentalServiceImpl implements RentalService {
     public void updateRental(RentalDTO rentalDTO) {
         Optional<Rental> optionalRental = rentalRepository.findById(rentalDTO.getRentalId());
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
 
         Optional<Customer> optionalCustomer = customerRepository.findById(rentalDTO.getCustomerId());
         if (optionalCustomer.isEmpty()) {
-            throw new RuntimeException("Customer not found");
+            throw new NotFoundException("Customer not found");
         }
 
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(rentalDTO.getVehicleId());
         if (optionalVehicle.isEmpty()) {
-            throw new RuntimeException("Vehicle not found");
+            throw new NotFoundException("Vehicle not found");
         }
         Optional<RentalRate> optionalRentalRate = rentalRateRepository.findById(rentalDTO.getRentalRateId());
         if (optionalRentalRate.isEmpty()) {
-            throw new RuntimeException("Rental rate not found");
+            throw new NotFoundException("Rental rate not found");
         }
 
         Rental rental = optionalRental.get();
@@ -200,7 +202,7 @@ public class RentalServiceImpl implements RentalService {
         // ------------ Rental Days Auto Recalculation ----------------
         long calculatedDays = java.time.Duration.between(rentalDTO.getStartDate(), rentalDTO.getEndDate()).toDays();
         if (calculatedDays <= 0) {
-            throw new RuntimeException("Invalid rental duration.");
+            throw new ValidationException("Invalid rental duration.");
         }
         int rentalDays = (int) calculatedDays;
 
@@ -231,12 +233,12 @@ public class RentalServiceImpl implements RentalService {
         // ------------ Driver Option & Assignment Management ----------------
         if (DriverOption.WITH_DRIVER.equals(driverOption)) {
             if (rentalDTO.getDriverId() == null) {
-                throw new RuntimeException("Driver ID is required when WITH_DRIVER option is selected");
+                throw new ValidationException("Driver ID is required when WITH_DRIVER option is selected");
             }
 
             Optional<Driver> optionalDriver = driverRepository.findById(rentalDTO.getDriverId());
             if (optionalDriver.isEmpty()) {
-                throw new RuntimeException("Driver not found");
+                throw new NotFoundException("Driver not found");
             }
             Driver driver = optionalDriver.get();
 
@@ -267,13 +269,11 @@ public class RentalServiceImpl implements RentalService {
         Optional<Rental> optionalRental = rentalRepository.findById(rentalId);
 
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
 
         Rental rental = optionalRental.get();
-
         rental.setStatus(RentalStatus.CANCELLED);
-
         rentalRepository.save(rental);
     }
 
