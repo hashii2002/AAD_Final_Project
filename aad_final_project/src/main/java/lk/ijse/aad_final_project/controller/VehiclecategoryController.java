@@ -4,7 +4,9 @@ import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.VehicleCategoryDTO;
 import lk.ijse.aad_final_project.service.VehicleCategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,32 +20,42 @@ public class VehiclecategoryController {
     private final VehicleCategoryService vehicleCategoryService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse saveVehicleCategory(@RequestBody VehicleCategoryDTO vehicleCategoryDTO) {
+    public ResponseEntity<CommonResponse> saveVehicleCategory(@RequestBody VehicleCategoryDTO vehicleCategoryDTO) {
         vehicleCategoryService.saveVehicleCategory(vehicleCategoryDTO);
-        return new CommonResponse(0, "Vehicle Category Saved Successfully");
+        CommonResponse response = new CommonResponse(0, "Vehicle Category Saved Successfully");
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getAllVehicleCategories() {
+    public ResponseEntity<CommonResponse> getAllVehicleCategories() {
         List<VehicleCategoryDTO> allCategories = vehicleCategoryService.getAllVehicleCategories();
-        return new CommonResponse(0, allCategories, "Get All Vehicle Categories API Successful");
+        CommonResponse response = new CommonResponse(0, allCategories, "Get All Vehicle Categories API Successful");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/select/{categoryId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse selectVehicleCategory(@PathVariable Long categoryId) {
+    public ResponseEntity<CommonResponse> selectVehicleCategory(@PathVariable Long categoryId) {
         VehicleCategoryDTO vehicleCategoryDTO = vehicleCategoryService.selectVehicleCategory(categoryId);
-        return new CommonResponse(0, vehicleCategoryDTO, "Vehicle Category Selected Successfully");
+        CommonResponse response = new CommonResponse(0, vehicleCategoryDTO, "Vehicle Category Selected Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse updateVehicleCategory(@RequestBody VehicleCategoryDTO vehicleCategoryDTO) {
+    public ResponseEntity<CommonResponse> updateVehicleCategory(@RequestBody VehicleCategoryDTO vehicleCategoryDTO) {
         vehicleCategoryService.updateVehicleCategory(vehicleCategoryDTO);
-        return new CommonResponse(0, "Vehicle Category Updated Successfully");
+        CommonResponse response = new CommonResponse(0, "Vehicle Category Updated Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping(value = "/{categoryId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse deleteVehicleCategory(@PathVariable Long categoryId) {
+    public ResponseEntity<CommonResponse> deleteVehicleCategory(@PathVariable Long categoryId) {
         vehicleCategoryService.deleteVehicleCategory(categoryId);
-        return new CommonResponse(0, "Vehicle Category Deleted Successfully");
+        CommonResponse response = new CommonResponse(0, "Vehicle Category Deleted Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

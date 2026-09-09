@@ -2,6 +2,7 @@ package lk.ijse.aad_final_project.service.impl;
 
 import lk.ijse.aad_final_project.dto.VehicleCategoryDTO;
 import lk.ijse.aad_final_project.entity.VehicleCategory;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.VehicleCategoryRepository;
 import lk.ijse.aad_final_project.service.VehicleCategoryService;
 import lombok.RequiredArgsConstructor;
@@ -51,9 +52,8 @@ public class VehicleCategoryServiceImpl implements VehicleCategoryService {
     @Override
     public VehicleCategoryDTO selectVehicleCategory(Long categoryId) {
         Optional<VehicleCategory> optionalVehicleCategory = vehicleCategoryRepository.findById(categoryId);
-
         if (optionalVehicleCategory.isEmpty()) {
-            throw new RuntimeException("Vehicle category not found");
+            throw new NotFoundException("Vehicle category not found");
         }
 
         VehicleCategory vehicleCategory = optionalVehicleCategory.get();
@@ -71,9 +71,8 @@ public class VehicleCategoryServiceImpl implements VehicleCategoryService {
     public void updateVehicleCategory(VehicleCategoryDTO vehicleCategoryDTO) {
 
         Optional<VehicleCategory> optionalVehicleCategory = vehicleCategoryRepository.findById(vehicleCategoryDTO.getCategoryId());
-
         if (optionalVehicleCategory.isEmpty()) {
-            throw new RuntimeException("Vehicle category not found");
+            throw new NotFoundException("Vehicle category not found");
         }
 
         VehicleCategory vehicleCategory = optionalVehicleCategory.get();
@@ -86,9 +85,8 @@ public class VehicleCategoryServiceImpl implements VehicleCategoryService {
 
     @Override
     public void deleteVehicleCategory(Long categoryId) {
-
         if (!vehicleCategoryRepository.existsById(categoryId)) {
-            throw new RuntimeException("Vehicle category not found");
+            throw new NotFoundException("Vehicle category not found");
         }
 
         vehicleCategoryRepository.deleteById(categoryId);
