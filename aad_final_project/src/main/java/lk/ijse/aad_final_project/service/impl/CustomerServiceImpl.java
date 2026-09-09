@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.CustomerDTO;
 import lk.ijse.aad_final_project.entity.Customer;
 import lk.ijse.aad_final_project.entity.User;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.CustomerRepository;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.service.CustomerService;
@@ -19,14 +20,12 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
 
-
     @Override
     public void saveCustomer(CustomerDTO customerDTO) {
-        Optional<User> optionalUser =
-                userRepository.findById(customerDTO.getUserId());
+        Optional<User> optionalUser = userRepository.findById(customerDTO.getUserId());
 
         if (optionalUser.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new NotFoundException("User not found");
         }
 
         User user = optionalUser.get();
@@ -35,9 +34,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         customer.setNic(customerDTO.getNic());
         customer.setAddress(customerDTO.getAddress());
-        customer.setDrivingLicenseNumber(
-                customerDTO.getDrivingLicenseNumber()
-        );
+        customer.setDrivingLicenseNumber(customerDTO.getDrivingLicenseNumber());
         customer.setUser(user);
 
         customerRepository.save(customer);
@@ -46,7 +43,6 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public List<CustomerDTO> getAllCustomers() {
         List<Customer> customers = customerRepository.findAll();
-
         List<CustomerDTO> customerDTOList = new ArrayList<>();
 
         for (Customer customer : customers) {
@@ -57,9 +53,7 @@ public class CustomerServiceImpl implements CustomerService {
             customerDTO.setUserId(customer.getUser().getUserId());
             customerDTO.setNic(customer.getNic());
             customerDTO.setAddress(customer.getAddress());
-            customerDTO.setDrivingLicenseNumber(
-                    customer.getDrivingLicenseNumber()
-            );
+            customerDTO.setDrivingLicenseNumber(customer.getDrivingLicenseNumber());
 
             customerDTOList.add(customerDTO);
         }
@@ -69,11 +63,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDTO selectCustomer(Long customerId) {
-        Optional<Customer> optionalCustomer =
-                customerRepository.findById(customerId);
+        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
 
         if (optionalCustomer.isEmpty()) {
-            throw new RuntimeException("Customer not found");
+            throw new NotFoundException("Customer not found");
         }
 
         Customer customer = optionalCustomer.get();
@@ -84,9 +77,7 @@ public class CustomerServiceImpl implements CustomerService {
         customerDTO.setUserId(customer.getUser().getUserId());
         customerDTO.setNic(customer.getNic());
         customerDTO.setAddress(customer.getAddress());
-        customerDTO.setDrivingLicenseNumber(
-                customer.getDrivingLicenseNumber()
-        );
+        customerDTO.setDrivingLicenseNumber(customer.getDrivingLicenseNumber());
 
         return customerDTO;
     }
@@ -94,20 +85,17 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void updateCustomer(CustomerDTO customerDTO) {
 
-        Optional<Customer> optionalCustomer =
-                customerRepository.findById(customerDTO.getCustomerId());
+        Optional<Customer> optionalCustomer = customerRepository.findById(customerDTO.getCustomerId());
 
         if (optionalCustomer.isEmpty()) {
-            throw new RuntimeException("Customer not found");
+            throw new NotFoundException("Customer not found");
         }
 
         Customer customer = optionalCustomer.get();
 
         customer.setNic(customerDTO.getNic());
         customer.setAddress(customerDTO.getAddress());
-        customer.setDrivingLicenseNumber(
-                customerDTO.getDrivingLicenseNumber()
-        );
+        customer.setDrivingLicenseNumber(customerDTO.getDrivingLicenseNumber());
 
         customerRepository.save(customer);
 
@@ -117,7 +105,7 @@ public class CustomerServiceImpl implements CustomerService {
     public void deleteCustomer(Long customerId) {
 
         if (!customerRepository.existsById(customerId)) {
-            throw new RuntimeException("Customer not found");
+            throw new NotFoundException("Customer not found");
         }
 
         customerRepository.deleteById(customerId);
@@ -128,7 +116,7 @@ public class CustomerServiceImpl implements CustomerService {
         Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
 
         if (optionalCustomer.isEmpty()) {
-            throw new RuntimeException("Customer not found");
+            throw new NotFoundException("Customer not found");
         }
 
         Customer customer = optionalCustomer.get();
