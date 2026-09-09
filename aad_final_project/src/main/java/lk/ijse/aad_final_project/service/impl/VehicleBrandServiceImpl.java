@@ -2,6 +2,7 @@ package lk.ijse.aad_final_project.service.impl;
 
 import lk.ijse.aad_final_project.dto.VehicleBrandDTO;
 import lk.ijse.aad_final_project.entity.VehicleBrand;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.VehicleBrandRepository;
 import lk.ijse.aad_final_project.service.VehicleBrandService;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,7 @@ public class VehicleBrandServiceImpl implements VehicleBrandService {
         Optional<VehicleBrand> optionalVehicleBrand = vehicleBrandRepository.findById(brandId);
 
         if (optionalVehicleBrand.isEmpty()) {
-            throw new RuntimeException("Vehicle brand not found");
+            throw new NotFoundException("Vehicle brand not found");
         }
 
         VehicleBrand vehicleBrand = optionalVehicleBrand.get();
@@ -72,7 +73,7 @@ public class VehicleBrandServiceImpl implements VehicleBrandService {
         Optional<VehicleBrand> optionalVehicleBrand = vehicleBrandRepository.findById(vehicleBrandDTO.getBrandId());
 
         if (optionalVehicleBrand.isEmpty()) {
-            throw new RuntimeException("Vehicle brand not found");
+            throw new NotFoundException("Vehicle brand not found");
         }
 
         VehicleBrand vehicleBrand = optionalVehicleBrand.get();
@@ -87,7 +88,7 @@ public class VehicleBrandServiceImpl implements VehicleBrandService {
     @Override
     public void deleteVehicleBrand(Long brandId) {
         if (!vehicleBrandRepository.existsById(brandId)) {
-            throw new RuntimeException("Vehicle brand not found");
+            throw new NotFoundException("Vehicle brand not found");
         }
 
         vehicleBrandRepository.deleteById(brandId);

@@ -4,7 +4,9 @@ import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.VehicleBrandDTO;
 import lk.ijse.aad_final_project.service.VehicleBrandService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,32 +20,42 @@ public class VehicleBrandController {
     private final VehicleBrandService vehicleBrandService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse saveVehicleBrand(@RequestBody VehicleBrandDTO vehicleBrandDTO) {
+    public ResponseEntity<CommonResponse> saveVehicleBrand(@RequestBody VehicleBrandDTO vehicleBrandDTO) {
         vehicleBrandService.saveVehicleBrand(vehicleBrandDTO);
-        return new CommonResponse(0, "Vehicle Brand Saved Successfully");
+        CommonResponse response = new CommonResponse(0, "Vehicle Brand Saved Successfully");
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getAllVehicleBrands() {
+    public ResponseEntity<CommonResponse> getAllVehicleBrands() {
         List<VehicleBrandDTO> allVehicleBrands = vehicleBrandService.getAllVehicleBrands();
-        return new CommonResponse(0, allVehicleBrands, "Get All Vehicle Brands API Successful");
+        CommonResponse response = new CommonResponse(0, allVehicleBrands, "Get All Vehicle Brands API Successful");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/select/{brandId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse selectVehicleBrand(@PathVariable Long brandId) {
+    public ResponseEntity<CommonResponse> selectVehicleBrand(@PathVariable Long brandId) {
         VehicleBrandDTO vehicleBrandDTO = vehicleBrandService.selectVehicleBrand(brandId);
-        return new CommonResponse(0, vehicleBrandDTO, "Vehicle Brand Selected Successfully");
+        CommonResponse response = new CommonResponse(0, vehicleBrandDTO, "Vehicle Brand Selected Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse updateVehicleBrand(@RequestBody VehicleBrandDTO vehicleBrandDTO) {
+    public ResponseEntity<CommonResponse> updateVehicleBrand(@RequestBody VehicleBrandDTO vehicleBrandDTO) {
         vehicleBrandService.updateVehicleBrand(vehicleBrandDTO);
-        return new CommonResponse(0, "Vehicle Brand Updated Successfully");
+        CommonResponse response = new CommonResponse(0, "Vehicle Brand Updated Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping(value = "/{brandId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse deleteVehicleBrand(@PathVariable Long brandId) {
+    public ResponseEntity<CommonResponse> deleteVehicleBrand(@PathVariable Long brandId) {
         vehicleBrandService.deleteVehicleBrand(brandId);
-        return new CommonResponse(0, "Vehicle Brand Deleted Successfully");
+        CommonResponse response = new CommonResponse(0, "Vehicle Brand Deleted Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
