@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.VehicleDocumentDTO;
 import lk.ijse.aad_final_project.entity.Vehicle;
 import lk.ijse.aad_final_project.entity.VehicleDocument;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.VehicleDocumentRepository;
 import lk.ijse.aad_final_project.repository.VehicleRepository;
 import lk.ijse.aad_final_project.service.VehicleDocumentService;
@@ -24,7 +25,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleDocumentDTO.getVehicleId());
 
         if (optionalVehicle.isEmpty()) {
-            throw new RuntimeException("Vehicle not found");
+            throw new NotFoundException("Vehicle not found");
         }
 
         Vehicle vehicle = optionalVehicle.get();
@@ -70,7 +71,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
         Optional<VehicleDocument> optionalVehicleDocument = vehicleDocumentRepository.findById(documentId);
 
         if (optionalVehicleDocument.isEmpty()) {
-            throw new RuntimeException("Vehicle document not found");
+            throw new NotFoundException("Vehicle document not found");
         }
 
         VehicleDocument vehicleDocument = optionalVehicleDocument.get();
@@ -92,9 +93,8 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
     public void updateVehicleDocument(VehicleDocumentDTO vehicleDocumentDTO) {
 
         Optional<VehicleDocument> optionalVehicleDocument = vehicleDocumentRepository.findById(vehicleDocumentDTO.getDocumentId());
-
         if (optionalVehicleDocument.isEmpty()) {
-            throw new RuntimeException("Vehicle document not found");
+            throw new NotFoundException("Vehicle document not found");
         }
 
         VehicleDocument vehicleDocument = optionalVehicleDocument.get();
@@ -111,9 +111,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
     public void deleteVehicleDocument(Long documentId) {
 
         if (!vehicleDocumentRepository.existsById(documentId)) {
-            throw new RuntimeException(
-                    "Vehicle document not found"
-            );
+            throw new NotFoundException("Vehicle document not found");
         }
         vehicleDocumentRepository.deleteById(documentId);
 
