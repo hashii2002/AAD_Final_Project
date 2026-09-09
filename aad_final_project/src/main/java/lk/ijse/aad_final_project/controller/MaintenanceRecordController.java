@@ -4,7 +4,9 @@ import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.MaintenanceRecordDTO;
 import lk.ijse.aad_final_project.service.MaintenanceRecordService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,33 +19,37 @@ public class MaintenanceRecordController {
     private final MaintenanceRecordService maintenanceRecordService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse saveMaintenanceRecord(@RequestBody MaintenanceRecordDTO maintenanceRecordDTO) {
+    public ResponseEntity<CommonResponse> saveMaintenanceRecord(@RequestBody MaintenanceRecordDTO maintenanceRecordDTO) {
         maintenanceRecordService.saveMaintenanceRecord(maintenanceRecordDTO);
-        return new CommonResponse(0, "Maintenance Record Saved Successfully");
+        CommonResponse response = new CommonResponse(0, "Maintenance Record Saved Successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse getAllMaintenanceRecords() {
+    public ResponseEntity<CommonResponse> getAllMaintenanceRecords() {
         List<MaintenanceRecordDTO> recordDTOList = maintenanceRecordService.getAllMaintenanceRecords();
-        return new CommonResponse(0, recordDTOList, "Get All Maintenance Records API Successful");
+        CommonResponse response = new CommonResponse(0, recordDTOList, "Get All Maintenance Records API Successful");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/select/{maintenanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse selectMaintenanceRecord(@PathVariable Long maintenanceId) {
+    public ResponseEntity<CommonResponse> selectMaintenanceRecord(@PathVariable Long maintenanceId) {
         MaintenanceRecordDTO maintenanceRecordDTO = maintenanceRecordService.selectMaintenanceRecord(maintenanceId);
-        return new CommonResponse(0, maintenanceRecordDTO, "Maintenance Record Selected Successfully");
+        CommonResponse response = new CommonResponse(0, maintenanceRecordDTO, "Maintenance Record Selected Successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse updateMaintenanceRecord(@RequestBody MaintenanceRecordDTO maintenanceRecordDTO) {
+    public ResponseEntity<CommonResponse> updateMaintenanceRecord(@RequestBody MaintenanceRecordDTO maintenanceRecordDTO) {
         maintenanceRecordService.updateMaintenanceRecord(maintenanceRecordDTO);
-        return new CommonResponse(0, "Maintenance Record Updated Successfully");
+        CommonResponse response = new CommonResponse(0, "Maintenance Record Updated Successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping(value = "/{maintenanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse deleteMaintenanceRecord(@PathVariable Long maintenanceId) {
+    public ResponseEntity<CommonResponse> deleteMaintenanceRecord(@PathVariable Long maintenanceId) {
         maintenanceRecordService.deleteMaintenanceRecord(maintenanceId);
-        return new CommonResponse(0, "Maintenance Record Deleted Successfully");
+        CommonResponse response = new CommonResponse(0, "Maintenance Record Deleted Successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
 }

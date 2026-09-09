@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.MaintenanceRecordDTO;
 import lk.ijse.aad_final_project.entity.MaintenanceRecord;
 import lk.ijse.aad_final_project.entity.Vehicle;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.MaintenanceRepository;
 import lk.ijse.aad_final_project.repository.VehicleRepository;
 import lk.ijse.aad_final_project.service.MaintenanceRecordService;
@@ -24,7 +25,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(maintenanceRecordDTO.getVehicleId());
 
         if (optionalVehicle.isEmpty()) {
-            throw new RuntimeException("Vehicle not found");
+            throw new NotFoundException("Vehicle not found");
         }
 
         Vehicle vehicle = optionalVehicle.get();
@@ -71,7 +72,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
         Optional<MaintenanceRecord> optionalRecord = maintenanceRepository.findById(maintenanceId);
 
         if (optionalRecord.isEmpty()) {
-            throw new RuntimeException("Maintenance record not found");
+            throw new NotFoundException("Maintenance record not found");
         }
 
         MaintenanceRecord record = optionalRecord.get();
@@ -96,13 +97,13 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
                 maintenanceRepository.findById(maintenanceRecordDTO.getMaintenanceId());
 
         if (optionalRecord.isEmpty()) {
-            throw new RuntimeException("Maintenance record not found");
+            throw new NotFoundException("Maintenance record not found");
         }
 
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(maintenanceRecordDTO.getVehicleId());
 
         if (optionalVehicle.isEmpty()) {
-            throw new RuntimeException("Vehicle not found");
+            throw new NotFoundException("Vehicle not found");
         }
 
         MaintenanceRecord record = optionalRecord.get();
@@ -123,9 +124,8 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
     @Override
     public void deleteMaintenanceRecord(Long maintenanceId) {
         if (!maintenanceRepository.existsById(maintenanceId)) {
-            throw new RuntimeException("Maintenance record not found");
+            throw new NotFoundException("Maintenance record not found");
         }
-
         maintenanceRepository.deleteById(maintenanceId);
     }
 }
