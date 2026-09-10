@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.VehicleModelDTO;
 import lk.ijse.aad_final_project.entity.VehicleBrand;
 import lk.ijse.aad_final_project.entity.VehicleModel;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.VehicleBrandRepository;
 import lk.ijse.aad_final_project.repository.VehicleModelRepository;
 import lk.ijse.aad_final_project.service.VehicleModelService;
@@ -23,9 +24,8 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     @Override
     public void saveVehicleModel(VehicleModelDTO vehicleModelDTO) {
         Optional<VehicleBrand> optionalBrand = vehicleBrandRepository.findById(vehicleModelDTO.getBrandId());
-
         if (optionalBrand.isEmpty()) {
-            throw new RuntimeException("Vehicle brand not found");
+            throw new NotFoundException("Vehicle brand not found");
         }
 
         VehicleBrand vehicleBrand = optionalBrand.get();
@@ -68,9 +68,8 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     @Override
     public VehicleModelDTO selectVehicleModel(Long modelId) {
         Optional<VehicleModel> optionalVehicleModel = vehicleModelRepository.findById(modelId);
-
         if (optionalVehicleModel.isEmpty()) {
-            throw new RuntimeException("Vehicle model not found");
+            throw new NotFoundException("Vehicle model not found");
         }
 
         VehicleModel vehicleModel = optionalVehicleModel.get();
@@ -90,15 +89,13 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     @Override
     public void updateVehicleModel(VehicleModelDTO vehicleModelDTO) {
         Optional<VehicleModel> optionalVehicleModel = vehicleModelRepository.findById(vehicleModelDTO.getModelId());
-
         if (optionalVehicleModel.isEmpty()) {
-            throw new RuntimeException("Vehicle model not found");
+            throw new NotFoundException("Vehicle model not found");
         }
 
         Optional<VehicleBrand> optionalBrand = vehicleBrandRepository.findById(vehicleModelDTO.getBrandId());
-
         if (optionalBrand.isEmpty()) {
-            throw new RuntimeException("Vehicle brand not found");
+            throw new NotFoundException("Vehicle brand not found");
         }
 
         VehicleModel vehicleModel = optionalVehicleModel.get();
@@ -118,7 +115,7 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     @Override
     public void deleteVehicleModel(Long modelId) {
         if (!vehicleModelRepository.existsById(modelId)) {
-            throw new RuntimeException("Vehicle model not found");
+            throw new NotFoundException("Vehicle model not found");
         }
 
         vehicleModelRepository.deleteById(modelId);
