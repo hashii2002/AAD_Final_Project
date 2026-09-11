@@ -6,6 +6,7 @@ import lk.ijse.aad_final_project.entity.User;
 import lk.ijse.aad_final_project.entity.Vehicle;
 import lk.ijse.aad_final_project.entity.VehicleInspection;
 import lk.ijse.aad_final_project.enums.RoleName;
+import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.repository.RentalRepository;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.repository.VehicleInspectionRepository;
@@ -31,17 +32,17 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     public void saveVehicleInspection(VehicleInspectionDTO vehicleInspectionDTO) {
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleInspectionDTO.getVehicleId());
         if (optionalVehicle.isEmpty()) {
-            throw new RuntimeException("Vehicle not found");
+            throw new NotFoundException("Vehicle not found");
         }
 
         Optional<Rental> optionalRental = rentalRepository.findById(vehicleInspectionDTO.getRentalId());
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
 
         Optional<User> optionalUser = userRepository.findById(vehicleInspectionDTO.getInspectedById());
         if (optionalUser.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new NotFoundException("User not found");
         }
 
         Vehicle vehicle = optionalVehicle.get();
@@ -97,9 +98,8 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     public VehicleInspectionDTO selectVehicleInspection(Long inspectionId) {
         Optional<VehicleInspection> optionalInspection = vehicleInspectionRepository.findById(inspectionId);
-
         if (optionalInspection.isEmpty()) {
-            throw new RuntimeException("Vehicle inspection not found");
+            throw new NotFoundException("Vehicle inspection not found");
         }
 
         VehicleInspection inspection = optionalInspection.get();
@@ -122,24 +122,24 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     public void updateVehicleInspection(VehicleInspectionDTO vehicleInspectionDTO) {
         Optional<VehicleInspection> optionalInspection = vehicleInspectionRepository.findById(vehicleInspectionDTO.getInspectionId());
         if (optionalInspection.isEmpty()) {
-            throw new RuntimeException("Vehicle inspection not found");
+            throw new NotFoundException("Vehicle inspection not found");
         }
 
         VehicleInspection inspection = optionalInspection.get();
 
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleInspectionDTO.getVehicleId());
         if (optionalVehicle.isEmpty()) {
-            throw new RuntimeException("Vehicle not found");
+            throw new NotFoundException("Vehicle not found");
         }
 
         Optional<Rental> optionalRental = rentalRepository.findById(vehicleInspectionDTO.getRentalId());
         if (optionalRental.isEmpty()) {
-            throw new RuntimeException("Rental not found");
+            throw new NotFoundException("Rental not found");
         }
 
         Optional<User> optionalUser = userRepository.findById(vehicleInspectionDTO.getInspectedById());
         if (optionalUser.isEmpty()) {
-            throw new RuntimeException("Inspector user not found");
+            throw new NotFoundException("Inspector user not found");
         }
 
         Vehicle vehicle = optionalVehicle.get();
@@ -172,7 +172,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     public void deleteVehicleInspection(Long inspectionId) {
 
         if (!vehicleInspectionRepository.existsById(inspectionId)) {
-            throw new RuntimeException("Vehicle inspection not found");
+            throw new NotFoundException("Vehicle inspection not found");
         }
         vehicleInspectionRepository.deleteById(inspectionId);
     }
