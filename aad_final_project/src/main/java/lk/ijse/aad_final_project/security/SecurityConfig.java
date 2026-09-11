@@ -1,5 +1,7 @@
 package lk.ijse.aad_final_project.security;
 
+import jakarta.servlet.http.HttpServletResponse;
+import lk.ijse.aad_final_project.constant.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.MediaType;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
 
@@ -43,13 +47,14 @@ public class SecurityConfig {
                         .requestMatchers("/v1/role/**").hasRole("ADMIN")
 
                         // Create User API - temporary for initial user creation
-                        .requestMatchers(HttpMethod.POST, "/v1/user/save").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/user/save").hasRole("ADMIN")
 
                         .requestMatchers("/v1/user/**").hasRole("ADMIN")
 
                         // Customer APIs
                         .requestMatchers(HttpMethod.POST, "/v1/customer/save").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
                         .requestMatchers(HttpMethod.PUT, "/v1/customer/update").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.PATCH, "/v1/customer/update").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
                         .requestMatchers(HttpMethod.DELETE, "/v1/customer/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/v1/customer/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/v1/customer/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
@@ -147,6 +152,23 @@ public class SecurityConfig {
 
                 )
 
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // 401 Unauthorized Handling
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            CommonResponse res = new CommonResponse(1, "Authentication is required to access this resource");
+                            response.getWriter().write(new ObjectMapper().writeValueAsString(res));
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            // 403 Forbidden Handling
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            CommonResponse res = new CommonResponse(1, "You do not have permission to access this resource");
+                            response.getWriter().write(new ObjectMapper().writeValueAsString(res));
+                        })
+                )
+
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -175,10 +197,10 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("*"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
-
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 

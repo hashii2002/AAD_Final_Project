@@ -12,7 +12,9 @@ public interface CustomerService {
 
     CustomerDTO selectCustomer(Long customerId);
 
-    void updateCustomer(CustomerDTO customerDTO);
+    void updateCustomer(CustomerDTO customerDTO, String username);
+
+    void patchCustomer(CustomerDTO customerDTO, String username);
 
     void deleteCustomer(Long customerId);
 

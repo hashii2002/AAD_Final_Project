@@ -4,6 +4,7 @@ import lk.ijse.aad_final_project.dto.CustomerDTO;
 import lk.ijse.aad_final_project.entity.Customer;
 import lk.ijse.aad_final_project.entity.User;
 import lk.ijse.aad_final_project.exception.NotFoundException;
+import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.CustomerRepository;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.service.CustomerService;
@@ -83,22 +84,69 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void updateCustomer(CustomerDTO customerDTO) {
+    public void updateCustomer(CustomerDTO customerDTO, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
 
-        Optional<Customer> optionalCustomer = customerRepository.findById(customerDTO.getCustomerId());
+        Customer customer;
+        if ("CUSTOMER".equals(user.getRole().getRoleName())) {
+            customer = customerRepository.findByUser_Username(username).orElseThrow(() -> new NotFoundException("Customer profile not found"));
 
-        if (optionalCustomer.isEmpty()) {
-            throw new NotFoundException("Customer not found");
+            if (customerDTO.getUserId() != null && !customer.getUser().getUserId().equals(customerDTO.getUserId())) {
+                throw new ValidationException("You cannot change the user associated with your profile");
+            }
+        } else {
+            if (customerDTO.getCustomerId() == null) {
+                throw new ValidationException("Customer ID is required");
+            }
+            customer = customerRepository.findById(customerDTO.getCustomerId()).orElseThrow(() -> new NotFoundException("Customer not found"));
         }
-
-        Customer customer = optionalCustomer.get();
 
         customer.setNic(customerDTO.getNic());
         customer.setAddress(customerDTO.getAddress());
         customer.setDrivingLicenseNumber(customerDTO.getDrivingLicenseNumber());
 
         customerRepository.save(customer);
+    }
 
+    @Override
+    public void patchCustomer(CustomerDTO customerDTO, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+
+        Customer customer;
+        if ("CUSTOMER".equals(user.getRole().getRoleName())) {
+            customer = customerRepository.findByUser_Username(username).orElseThrow(() -> new NotFoundException("Customer profile not found"));
+        } else {
+            if (customerDTO.getCustomerId() == null) {
+                throw new ValidationException("Customer ID is required");
+            }
+            customer = customerRepository.findById(customerDTO.getCustomerId()).orElseThrow(() -> new NotFoundException("Customer not found"));
+        }
+
+        if (customerDTO.getNic() != null) {
+            if (customerDTO.getNic().isBlank()) {
+                throw new ValidationException("NIC cannot be empty");
+            }
+            customer.setNic(customerDTO.getNic());
+        }
+
+        if (customerDTO.getAddress() != null) {
+            if (customerDTO.getAddress().isBlank()) {
+                throw new ValidationException("Address cannot be empty");
+            }
+            customer.setAddress(customerDTO.getAddress());
+        }
+
+        if (customerDTO.getDrivingLicenseNumber() != null) {
+            if (customerDTO.getDrivingLicenseNumber().isBlank()) {
+                throw new ValidationException("Driving license number cannot be empty");
+            }
+            customer.setDrivingLicenseNumber(customerDTO.getDrivingLicenseNumber());
+        }
+
+        if (customerDTO.getUserId() != null && !customer.getUser().getUserId().equals(customerDTO.getUserId())) {
+            throw new ValidationException("User ID cannot be changed");
+        }
+        customerRepository.save(customer);
     }
 
     @Override
@@ -107,7 +155,6 @@ public class CustomerServiceImpl implements CustomerService {
         if (!customerRepository.existsById(customerId)) {
             throw new NotFoundException("Customer not found");
         }
-
         customerRepository.deleteById(customerId);
     }
 

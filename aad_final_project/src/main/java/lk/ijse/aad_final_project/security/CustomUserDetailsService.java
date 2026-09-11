@@ -27,6 +27,12 @@ public class CustomUserDetailsService implements UserDetailsService {
                         )
                 );
 
+        if (user.getRole() == null || user.getRole().getRoleName() == null) {
+            throw new UsernameNotFoundException(
+                    "User role is not configured"
+            );
+        }
+
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())
