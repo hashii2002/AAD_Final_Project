@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.controller;
 
+import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.AuthDTO;
 import lk.ijse.aad_final_project.dto.UserDTO;
@@ -24,7 +25,7 @@ public class UserController {
     private final JwtUtil jwtUtil;
 
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> login(@RequestBody AuthDTO authDTO) {
+    public ResponseEntity<CommonResponse> login( @Valid @RequestBody AuthDTO authDTO) {
 
         UserDTO userDetails = userService.getUserDetails(authDTO.getUsername(), authDTO.getPassword());
 
@@ -42,7 +43,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<CommonResponse> saveUser( @Valid @RequestBody UserDTO userDTO) {
 
         userService.saveUser(userDTO);
 
@@ -68,7 +69,7 @@ public class UserController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<CommonResponse> updateUser( @Valid @RequestBody UserDTO userDTO) {
 
         userService.updateUser(userDTO);
         CommonResponse response = new CommonResponse(0, "User Updated Successfully");
