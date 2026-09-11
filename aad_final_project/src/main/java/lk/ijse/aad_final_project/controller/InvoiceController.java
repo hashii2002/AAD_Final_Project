@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.controller;
 
+import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.InvoiceDTO;
 import lk.ijse.aad_final_project.service.InvoiceService;
@@ -21,7 +22,7 @@ public class InvoiceController {
     private final InvoiceService invoiceService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveInvoice(@RequestBody InvoiceDTO invoiceDTO) {
+    public ResponseEntity<CommonResponse> saveInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO) {
         invoiceService.saveInvoice(invoiceDTO);
         CommonResponse response = new CommonResponse(0, "Invoice Saved Successfully");
 
@@ -45,7 +46,7 @@ public class InvoiceController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateInvoice(@RequestBody InvoiceDTO invoiceDTO) {
+    public ResponseEntity<CommonResponse> updateInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO) {
         invoiceService.updateInvoice(invoiceDTO);
         CommonResponse response = new CommonResponse(0, "Invoice Updated Successfully");
 
