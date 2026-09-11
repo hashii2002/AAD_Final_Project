@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.controller;
 
+import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.CustomerDTO;
 import lk.ijse.aad_final_project.service.CustomerService;
@@ -21,7 +22,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveCustomer(@RequestBody CustomerDTO customerDTO) {
+    public ResponseEntity<CommonResponse> saveCustomer(@Valid @RequestBody CustomerDTO customerDTO) {
         customerService.saveCustomer(customerDTO);
         CommonResponse response = new CommonResponse(0, "Customer Saved Successfully");
 
@@ -54,7 +55,7 @@ public class CustomerController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateCustomer(@RequestBody CustomerDTO customerDTO) {
+    public ResponseEntity<CommonResponse> updateCustomer(@Valid @RequestBody CustomerDTO customerDTO) {
         customerService.updateCustomer(customerDTO);
         CommonResponse response = new CommonResponse(0, "Customer Updated Successfully"
         );
