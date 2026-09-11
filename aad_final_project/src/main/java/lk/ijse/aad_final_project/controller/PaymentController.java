@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> savePayment(@RequestBody PaymentDTO paymentDTO) {
+    public ResponseEntity<CommonResponse> savePayment(@Valid @RequestBody PaymentDTO paymentDTO) {
         paymentService.savePayment(paymentDTO);
         CommonResponse response = new CommonResponse(0, "Payment Saved Successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -42,7 +43,7 @@ public class PaymentController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updatePayment(@RequestBody PaymentDTO paymentDTO) {
+    public ResponseEntity<CommonResponse> updatePayment(@Valid @RequestBody PaymentDTO paymentDTO) {
         paymentService.updatePayment(paymentDTO);
         CommonResponse response = new CommonResponse(0, "Payment Updated Successfully");
         return ResponseEntity.status(HttpStatus.OK).body(response);
