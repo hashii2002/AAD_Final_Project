@@ -1,6 +1,7 @@
 package lk.ijse.aad_final_project.security;
 
 import lk.ijse.aad_final_project.entity.User;
+import lk.ijse.aad_final_project.enums.UserStatus;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,6 +31,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .withUsername(user.getUsername())
                 .password(user.getPassword())
                 .roles(user.getRole().getRoleName().name())
+                .disabled(user.getStatus() != UserStatus.ACTIVE)
                 .build();
     }
 }

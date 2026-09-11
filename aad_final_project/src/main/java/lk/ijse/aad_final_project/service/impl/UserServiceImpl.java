@@ -3,7 +3,9 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.UserDTO;
 import lk.ijse.aad_final_project.entity.Role;
 import lk.ijse.aad_final_project.entity.User;
+import lk.ijse.aad_final_project.enums.UserStatus;
 import lk.ijse.aad_final_project.exception.NotFoundException;
+import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.RoleRepository;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.service.UserService;
@@ -130,10 +132,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
             throw new NotFoundException("User not found");
         }
-        userRepository.deleteById(userId);
+
+        User user = optionalUser.get();
+        user.setStatus(UserStatus.INACTIVE);
+        userRepository.save(user);
     }
 
     @Override
@@ -145,6 +151,10 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = optionalUser.get();
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new ValidationException("User account is inactive");
+        }
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid username or password");
         }

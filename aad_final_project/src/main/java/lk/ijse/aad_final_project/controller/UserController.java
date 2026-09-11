@@ -73,7 +73,7 @@ public class UserController {
     @DeleteMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
-        CommonResponse response = new CommonResponse(0, "User Deleted Successfully");
+        CommonResponse response = new CommonResponse(0, "User Deactivated Successfully");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
