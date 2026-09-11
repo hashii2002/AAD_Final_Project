@@ -1,5 +1,8 @@
 package lk.ijse.aad_final_project.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lk.ijse.aad_final_project.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,20 +16,29 @@ public class UserDTO {
 
     private Long userId;
 
+    @NotNull(message = "Role ID is required")
     private Long roleId;
 
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String username;
 
+    @NotBlank(message = "Email is required")
     private String email;
 
+    @NotBlank(message = "Password is required")
     private String password;
 
+    @NotBlank(message = "First name is required")
     private String firstName;
 
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
+    @NotBlank(message = "Phone Number is required")
     private String phone;
 
+    @NotNull(message = "User status is required")
     private UserStatus status;
 
     private Long customerId;

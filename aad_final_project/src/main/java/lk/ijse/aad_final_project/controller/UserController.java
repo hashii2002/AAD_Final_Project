@@ -44,25 +44,20 @@ public class UserController {
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> saveUser( @Valid @RequestBody UserDTO userDTO) {
-
         userService.saveUser(userDTO);
-
         CommonResponse response = new CommonResponse(0, "User Saved Successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> getAllUsers() {
-
         List<UserDTO> allUsers = userService.getAllUsers();
-
         CommonResponse response = new CommonResponse(0, allUsers, "Get All Users API Successful");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/select/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> selectUser(@PathVariable Long userId) {
-
         UserDTO userDTO = userService.selectUser(userId);
         CommonResponse response = new CommonResponse(0, userDTO, "User Selected Successfully");
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -70,7 +65,6 @@ public class UserController {
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> updateUser( @Valid @RequestBody UserDTO userDTO) {
-
         userService.updateUser(userDTO);
         CommonResponse response = new CommonResponse(0, "User Updated Successfully");
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -78,7 +72,6 @@ public class UserController {
 
     @DeleteMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> deleteUser(@PathVariable Long userId) {
-
         userService.deleteUser(userId);
         CommonResponse response = new CommonResponse(0, "User Deleted Successfully");
         return ResponseEntity.status(HttpStatus.OK).body(response);
