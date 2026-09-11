@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.controller;
 
+import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.RentalDTO;
 import lk.ijse.aad_final_project.dto.RentalDriverDTO;
@@ -22,7 +23,7 @@ public class RentalDriverController {
     private final RentalDriverService rentalDriverService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveRentalDriver(@RequestBody RentalDriverDTO rentalDriverDTO) {
+    public ResponseEntity<CommonResponse> saveRentalDriver(@Valid @RequestBody RentalDriverDTO rentalDriverDTO) {
         rentalDriverService.saveRentalDriver(rentalDriverDTO);
         CommonResponse response = new CommonResponse(0, "Rental Driver Saved Successfully");
 
@@ -46,7 +47,7 @@ public class RentalDriverController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateRentalDriver(@RequestBody RentalDriverDTO rentalDriverDTO) {
+    public ResponseEntity<CommonResponse> updateRentalDriver(@Valid @RequestBody RentalDriverDTO rentalDriverDTO) {
         rentalDriverService.updateRentalDriver(rentalDriverDTO);
         CommonResponse response = new CommonResponse(0, "Rental Driver Updated Successfully");
 
