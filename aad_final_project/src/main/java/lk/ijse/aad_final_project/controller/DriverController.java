@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class DriverController {
     private final DriverService driverService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveDriver(@RequestBody DriverDTO driverDTO) {
+    public ResponseEntity<CommonResponse> saveDriver( @Valid @RequestBody DriverDTO driverDTO) {
         driverService.saveDriver(driverDTO);
         CommonResponse response = new CommonResponse(0, "Driver Saved Successfully");
 
@@ -45,7 +46,7 @@ public class DriverController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateDriver(@RequestBody DriverDTO driverDTO) {
+    public ResponseEntity<CommonResponse> updateDriver( @Valid @RequestBody DriverDTO driverDTO) {
         driverService.updateDriver(driverDTO);
         CommonResponse response = new CommonResponse(0, "Driver Updated Successfully");
 
