@@ -41,5 +41,4 @@ public class VehicleDocument {
     @Column(name = "status", nullable = false)
     private DocumentStatus status;
 
-
 }

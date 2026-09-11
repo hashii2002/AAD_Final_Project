@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.controller;
 
+import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.VehicleCategoryDTO;
 import lk.ijse.aad_final_project.service.VehicleCategoryService;
@@ -20,7 +21,7 @@ public class VehiclecategoryController {
     private final VehicleCategoryService vehicleCategoryService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveVehicleCategory(@RequestBody VehicleCategoryDTO vehicleCategoryDTO) {
+    public ResponseEntity<CommonResponse> saveVehicleCategory(@Valid @RequestBody VehicleCategoryDTO vehicleCategoryDTO) {
         vehicleCategoryService.saveVehicleCategory(vehicleCategoryDTO);
         CommonResponse response = new CommonResponse(0, "Vehicle Category Saved Successfully");
 
@@ -44,7 +45,7 @@ public class VehiclecategoryController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateVehicleCategory(@RequestBody VehicleCategoryDTO vehicleCategoryDTO) {
+    public ResponseEntity<CommonResponse> updateVehicleCategory(@Valid @RequestBody VehicleCategoryDTO vehicleCategoryDTO) {
         vehicleCategoryService.updateVehicleCategory(vehicleCategoryDTO);
         CommonResponse response = new CommonResponse(0, "Vehicle Category Updated Successfully");
 

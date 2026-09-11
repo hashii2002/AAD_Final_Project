@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.controller;
 
+import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.VehicleDocumentDTO;
 import lk.ijse.aad_final_project.service.VehicleDocumentService;
@@ -20,7 +21,7 @@ public class VehicleDocumentController {
     private final VehicleDocumentService vehicleDocumentService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveVehicleDocument(@RequestBody VehicleDocumentDTO vehicleDocumentDTO) {
+    public ResponseEntity<CommonResponse> saveVehicleDocument(@Valid @RequestBody VehicleDocumentDTO vehicleDocumentDTO) {
         vehicleDocumentService.saveVehicleDocument(vehicleDocumentDTO);
         CommonResponse response = new CommonResponse(0, "Vehicle Document Saved Successfully");
 
@@ -44,7 +45,7 @@ public class VehicleDocumentController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateVehicleDocument(@RequestBody VehicleDocumentDTO vehicleDocumentDTO) {
+    public ResponseEntity<CommonResponse> updateVehicleDocument(@Valid @RequestBody VehicleDocumentDTO vehicleDocumentDTO) {
         vehicleDocumentService.updateVehicleDocument(vehicleDocumentDTO);
         CommonResponse response = new CommonResponse(0, "Vehicle Document Updated Successfully");
 
