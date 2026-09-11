@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.controller;
 
+import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.ReviewDTO;
 import lk.ijse.aad_final_project.service.ReviewService;
@@ -21,7 +22,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveReview(@RequestBody ReviewDTO reviewDTO, Authentication authentication) {
+    public ResponseEntity<CommonResponse> saveReview(@Valid @RequestBody ReviewDTO reviewDTO, Authentication authentication) {
         String username = authentication.getName();
         reviewService.saveReview(reviewDTO, username);
         CommonResponse response = new CommonResponse(0, "Review Saved Successfully");
@@ -46,7 +47,7 @@ public class ReviewController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateReview(@RequestBody ReviewDTO reviewDTO, Authentication authentication) {
+    public ResponseEntity<CommonResponse> updateReview(@Valid @RequestBody ReviewDTO reviewDTO, Authentication authentication) {
         String username = authentication.getName();
         reviewService.updateReview(reviewDTO, username);
         CommonResponse response = new CommonResponse(0, "Review Updated Successfully");

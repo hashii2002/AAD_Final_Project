@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.controller;
 
+import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.RoleDTO;
 import lk.ijse.aad_final_project.service.RoleService;
@@ -20,7 +21,7 @@ public class RoleController {
     private final RoleService roleService;
 
     @PostMapping(value = "/save-role", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveRole(@RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<CommonResponse> saveRole(@Valid @RequestBody RoleDTO roleDTO) {
         roleService.saveRole(roleDTO);
         CommonResponse response = new CommonResponse(0, "Role Saved Successfully");
 
@@ -44,7 +45,7 @@ public class RoleController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateRole(@RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<CommonResponse> updateRole(@Valid @RequestBody RoleDTO roleDTO) {
         roleService.updateRole(roleDTO);
         CommonResponse response = new CommonResponse(0, "Role Updated Successfully");
 

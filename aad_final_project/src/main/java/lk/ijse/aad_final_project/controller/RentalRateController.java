@@ -1,5 +1,6 @@
 package lk.ijse.aad_final_project.controller;
 
+import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.RentalRateDTO;
 import lk.ijse.aad_final_project.service.RentalRateService;
@@ -20,7 +21,7 @@ public class RentalRateController {
     private final RentalRateService rentalRateService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveRentalRate(@RequestBody RentalRateDTO rentalRateDTO) {
+    public ResponseEntity<CommonResponse> saveRentalRate(@Valid @RequestBody RentalRateDTO rentalRateDTO) {
         rentalRateService.saveRentalRate(rentalRateDTO);
         CommonResponse response = new CommonResponse(0, "Rental Rate Saved Successfully");
 
@@ -44,7 +45,7 @@ public class RentalRateController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateRentalRate(@RequestBody RentalRateDTO rentalRateDTO) {
+    public ResponseEntity<CommonResponse> updateRentalRate(@Valid @RequestBody RentalRateDTO rentalRateDTO) {
         rentalRateService.updateRentalRate(rentalRateDTO);
         CommonResponse response = new CommonResponse(0, "Rental Rate Updated Successfully");
 
