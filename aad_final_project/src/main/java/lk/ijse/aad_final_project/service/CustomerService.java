@@ -1,6 +1,7 @@
 package lk.ijse.aad_final_project.service;
 
 import lk.ijse.aad_final_project.dto.CustomerDTO;
+import lk.ijse.aad_final_project.dto.CustomerRegisterDTO;
 
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface CustomerService {
     void deleteCustomer(Long customerId);
 
     CustomerDTO getCustomerByUsername(String username);
+
+    void registerCustomer(CustomerRegisterDTO dto);
 }

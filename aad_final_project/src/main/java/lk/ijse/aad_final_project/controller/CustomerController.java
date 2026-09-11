@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.controller;
 import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.CustomerDTO;
+import lk.ijse.aad_final_project.dto.CustomerRegisterDTO;
 import lk.ijse.aad_final_project.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -79,5 +80,12 @@ public class CustomerController {
         CommonResponse response = new CommonResponse(0, "Customer Deleted Successfully");
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommonResponse> registerCustomer(@Valid @RequestBody CustomerRegisterDTO customerRegisterDTO) {
+        customerService.registerCustomer(customerRegisterDTO);
+        CommonResponse response = new CommonResponse(0, "Customer Registered Successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

@@ -1,15 +1,21 @@
 package lk.ijse.aad_final_project.service.impl;
 
 import lk.ijse.aad_final_project.dto.CustomerDTO;
+import lk.ijse.aad_final_project.dto.CustomerRegisterDTO;
 import lk.ijse.aad_final_project.entity.Customer;
+import lk.ijse.aad_final_project.entity.Role;
 import lk.ijse.aad_final_project.entity.User;
+import lk.ijse.aad_final_project.enums.UserStatus;
 import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.CustomerRepository;
+import lk.ijse.aad_final_project.repository.RoleRepository;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.service.CustomerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +26,8 @@ import java.util.Optional;
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void saveCustomer(CustomerDTO customerDTO) {
@@ -177,5 +185,34 @@ public class CustomerServiceImpl implements CustomerService {
         customerDTO.setDrivingLicenseNumber(customer.getDrivingLicenseNumber());
 
         return customerDTO;
+    }
+
+    @Override
+    @Transactional
+    public void registerCustomer(CustomerRegisterDTO dto) {
+        Role customerRole = roleRepository.findAll().stream()
+                .filter(r -> r.getRoleName().name().equals("CUSTOMER"))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Default CUSTOMER role not found in system"));
+
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setPhone(dto.getPhone());
+        user.setStatus(UserStatus.ACTIVE);
+        user.setRole(customerRole);
+
+        User savedUser = userRepository.save(user);
+
+        Customer customer = new Customer();
+        customer.setNic(dto.getNic());
+        customer.setAddress(dto.getAddress());
+        customer.setDrivingLicenseNumber(dto.getDrivingLicenseNumber());
+        customer.setUser(savedUser);
+
+        customerRepository.save(customer);
     }
 }

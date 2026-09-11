@@ -51,6 +51,9 @@ public class SecurityConfig {
 
                         .requestMatchers("/v1/user/**").hasRole("ADMIN")
 
+                        // Register Customer APIs
+                        .requestMatchers("/v1/user/login", "/v1/customer/register").permitAll()
+
                         // Customer APIs
                         .requestMatchers(HttpMethod.POST, "/v1/customer/save").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
                         .requestMatchers(HttpMethod.PUT, "/v1/customer/update").hasAnyRole("ADMIN", "FLEET_MANAGER", "CUSTOMER")
