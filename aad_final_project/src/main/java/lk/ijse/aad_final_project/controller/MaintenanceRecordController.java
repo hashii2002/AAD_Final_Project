@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class MaintenanceRecordController {
     private final MaintenanceRecordService maintenanceRecordService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> saveMaintenanceRecord(@RequestBody MaintenanceRecordDTO maintenanceRecordDTO) {
+    public ResponseEntity<CommonResponse> saveMaintenanceRecord(@Valid @RequestBody MaintenanceRecordDTO maintenanceRecordDTO) {
         maintenanceRecordService.saveMaintenanceRecord(maintenanceRecordDTO);
         CommonResponse response = new CommonResponse(0, "Maintenance Record Saved Successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -40,7 +41,7 @@ public class MaintenanceRecordController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse> updateMaintenanceRecord(@RequestBody MaintenanceRecordDTO maintenanceRecordDTO) {
+    public ResponseEntity<CommonResponse> updateMaintenanceRecord(@Valid @RequestBody MaintenanceRecordDTO maintenanceRecordDTO) {
         maintenanceRecordService.updateMaintenanceRecord(maintenanceRecordDTO);
         CommonResponse response = new CommonResponse(0, "Maintenance Record Updated Successfully");
         return ResponseEntity.status(HttpStatus.OK).body(response);
