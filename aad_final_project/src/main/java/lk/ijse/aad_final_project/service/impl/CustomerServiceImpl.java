@@ -23,6 +23,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
@@ -30,6 +31,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public void saveCustomer(CustomerDTO customerDTO) {
         Optional<User> optionalUser = userRepository.findById(customerDTO.getUserId());
 
@@ -92,6 +94,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public void updateCustomer(CustomerDTO customerDTO, String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
 
@@ -117,6 +120,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public void patchCustomer(CustomerDTO customerDTO, String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
 
@@ -158,6 +162,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public void deleteCustomer(Long customerId) {
 
         if (!customerRepository.existsById(customerId)) {

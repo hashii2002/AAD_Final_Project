@@ -15,6 +15,7 @@ import lk.ijse.aad_final_project.repository.RentalRepository;
 import lk.ijse.aad_final_project.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
@@ -29,6 +31,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final PaymentRepository paymentRepository;
 
     @Override
+    @Transactional
     public void saveInvoice(InvoiceDTO invoiceDTO) {
 
         Optional<Rental> optionalRental = rentalRepository.findById(invoiceDTO.getRentalId());
@@ -101,6 +104,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    @Transactional
     public void updateInvoice(InvoiceDTO invoiceDTO) {
 
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceDTO.getInvoiceId());
@@ -143,6 +147,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    @Transactional
     public void deleteInvoice(Long invoiceId) {
 
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);

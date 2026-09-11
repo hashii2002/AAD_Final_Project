@@ -9,6 +9,7 @@ import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.service.DriverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +17,14 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DriverServiceImpl implements DriverService {
 
     private final DriverRepository driverRepository;
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public void saveDriver(DriverDTO driverDTO) {
         Optional<User> optionalUser = userRepository.findById(driverDTO.getUserId());
 
@@ -82,6 +85,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
+    @Transactional
     public void updateDriver(DriverDTO driverDTO) {
 
         Optional<Driver> optionalDriver =
@@ -100,6 +104,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
+    @Transactional
     public void deleteDriver(Long driverId) {
         if (!driverRepository.existsById(driverId)) {
             throw new NotFoundException("Driver not found");

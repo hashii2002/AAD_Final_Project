@@ -9,6 +9,7 @@ import lk.ijse.aad_final_project.repository.VehicleRepository;
 import lk.ijse.aad_final_project.service.MaintenanceRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,11 +17,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
     private final MaintenanceRepository maintenanceRepository;
     private final VehicleRepository vehicleRepository;
 
     @Override
+    @Transactional
     public void saveMaintenanceRecord(MaintenanceRecordDTO maintenanceRecordDTO) {
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(maintenanceRecordDTO.getVehicleId());
 
@@ -92,6 +95,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
     }
 
     @Override
+    @Transactional
     public void updateMaintenanceRecord(MaintenanceRecordDTO maintenanceRecordDTO) {
         Optional<MaintenanceRecord> optionalRecord =
                 maintenanceRepository.findById(maintenanceRecordDTO.getMaintenanceId());
@@ -122,6 +126,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
     }
 
     @Override
+    @Transactional
     public void deleteMaintenanceRecord(Long maintenanceId) {
         if (!maintenanceRepository.existsById(maintenanceId)) {
             throw new NotFoundException("Maintenance record not found");
