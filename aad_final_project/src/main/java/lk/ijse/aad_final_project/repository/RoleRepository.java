@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface RoleRepository extends JpaRepository<Role,Long> {
 
@@ -21,4 +23,8 @@ public interface RoleRepository extends JpaRepository<Role,Long> {
     // Check whether users are assigned to this role
     @Query("  SELECT COUNT(u) > 0 FROM User u WHERE u.role.roleId = :roleId")
     boolean existsUsersByRoleId(@Param("roleId") Long roleId);
+
+    // Find role by role name
+    @Query(" SELECT r FROM Role r WHERE r.roleName = :roleName")
+    Optional<Role> findRoleByRoleName(@Param("roleName") RoleName roleName);
 }

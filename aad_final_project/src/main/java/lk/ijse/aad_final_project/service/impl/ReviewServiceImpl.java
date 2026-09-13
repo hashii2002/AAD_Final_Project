@@ -38,7 +38,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw new RuntimeException("Rental ID is required");
         }
 
-        Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
+        Optional<Customer> optionalCustomer = customerRepository.findCustomerByUsername(username);
         if (optionalCustomer.isEmpty()) {
             throw new NotFoundException("Customer not found");
         }
@@ -113,7 +113,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = optionalReview.get();
 
-        Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
+        Optional<Customer> optionalCustomer = customerRepository.findCustomerByUsername(username);
 
         if (optionalCustomer.isEmpty()) {
             throw new NotFoundException("Customer not found");
@@ -152,7 +152,7 @@ public class ReviewServiceImpl implements ReviewService {
             return;
         }
 
-        Optional<Customer> optionalCustomer = customerRepository.findByUser_Username(username);
+        Optional<Customer> optionalCustomer = customerRepository.findCustomerByUsername(username);
         if (optionalCustomer.isEmpty()) {
             throw new NotFoundException("Customer not found");
         }

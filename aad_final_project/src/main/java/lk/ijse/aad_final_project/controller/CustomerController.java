@@ -58,6 +58,7 @@ public class CustomerController {
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> updateCustomer(@Valid @RequestBody CustomerDTO customerDTO, Authentication authentication) {
         String username = authentication.getName();
+        customerService.updateCustomer(customerDTO, username);
         CommonResponse response = new CommonResponse(0, "Customer Updated Successfully");
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -72,7 +73,6 @@ public class CustomerController {
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
 
     @DeleteMapping(value = "/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> deleteCustomer(@PathVariable Long customerId) {
