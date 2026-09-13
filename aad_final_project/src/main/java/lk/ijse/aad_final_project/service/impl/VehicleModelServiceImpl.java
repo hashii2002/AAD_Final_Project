@@ -3,7 +3,9 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.VehicleModelDTO;
 import lk.ijse.aad_final_project.entity.VehicleBrand;
 import lk.ijse.aad_final_project.entity.VehicleModel;
+import lk.ijse.aad_final_project.exception.DuplicateException;
 import lk.ijse.aad_final_project.exception.NotFoundException;
+import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.VehicleBrandRepository;
 import lk.ijse.aad_final_project.repository.VehicleModelRepository;
 import lk.ijse.aad_final_project.service.VehicleModelService;
@@ -26,6 +28,31 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     @Override
     @Transactional
     public void saveVehicleModel(VehicleModelDTO vehicleModelDTO) {
+        if (vehicleModelDTO == null) {
+            throw new ValidationException("Vehicle model data is required");
+        }
+        if (vehicleModelDTO.getBrandId() == null) {
+            throw new ValidationException("Brand ID is required");
+        }
+        if (vehicleModelDTO.getModelName() == null || vehicleModelDTO.getModelName().isBlank()) {
+            throw new ValidationException("Model name is required");
+        }
+        if (vehicleModelDTO.getFuelType() == null) {
+            throw new ValidationException("Fuel type is required");
+        }
+        if (vehicleModelDTO.getSeatingCapacity() == null || vehicleModelDTO.getSeatingCapacity() < 1) {
+            throw new ValidationException("Seating capacity must be at least 1");
+        }
+        if (vehicleModelDTO.getTransmissionType() == null) {
+            throw new ValidationException("Transmission type is required");
+        }
+
+        String modelName = vehicleModelDTO.getModelName().trim();
+
+        if (vehicleModelRepository.existsByModelNameAndBrand_BrandId(modelName, vehicleModelDTO.getBrandId())) {
+            throw new DuplicateException("Vehicle model with this name already exists for the selected brand");
+        }
+
         Optional<VehicleBrand> optionalBrand = vehicleBrandRepository.findById(vehicleModelDTO.getBrandId());
         if (optionalBrand.isEmpty()) {
             throw new NotFoundException("Vehicle brand not found");
@@ -34,25 +61,21 @@ public class VehicleModelServiceImpl implements VehicleModelService {
         VehicleBrand vehicleBrand = optionalBrand.get();
 
         VehicleModel vehicleModel = new VehicleModel();
-
-        vehicleModel.setModelName(vehicleModelDTO.getModelName());
+        vehicleModel.setModelName(modelName);
         vehicleModel.setFuelType(vehicleModelDTO.getFuelType());
         vehicleModel.setSeatingCapacity(vehicleModelDTO.getSeatingCapacity());
         vehicleModel.setTransmissionType(vehicleModelDTO.getTransmissionType());
         vehicleModel.setBrand(vehicleBrand);
 
         vehicleModelRepository.save(vehicleModel);
-
     }
 
     @Override
     public List<VehicleModelDTO> getAllVehicleModels() {
         List<VehicleModel> vehicleModels = vehicleModelRepository.findAll();
-
         List<VehicleModelDTO> vehicleModelDTOList = new ArrayList<>();
 
         for (VehicleModel vehicleModel : vehicleModels) {
-
             VehicleModelDTO vehicleModelDTO = new VehicleModelDTO();
 
             vehicleModelDTO.setModelId(vehicleModel.getModelId());
@@ -70,6 +93,10 @@ public class VehicleModelServiceImpl implements VehicleModelService {
 
     @Override
     public VehicleModelDTO selectVehicleModel(Long modelId) {
+        if (modelId == null) {
+            throw new ValidationException("Model ID is required");
+        }
+
         Optional<VehicleModel> optionalVehicleModel = vehicleModelRepository.findById(modelId);
         if (optionalVehicleModel.isEmpty()) {
             throw new NotFoundException("Vehicle model not found");
@@ -78,7 +105,6 @@ public class VehicleModelServiceImpl implements VehicleModelService {
         VehicleModel vehicleModel = optionalVehicleModel.get();
 
         VehicleModelDTO vehicleModelDTO = new VehicleModelDTO();
-
         vehicleModelDTO.setModelId(vehicleModel.getModelId());
         vehicleModelDTO.setBrandId(vehicleModel.getBrand().getBrandId());
         vehicleModelDTO.setModelName(vehicleModel.getModelName());
@@ -92,6 +118,28 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     @Override
     @Transactional
     public void updateVehicleModel(VehicleModelDTO vehicleModelDTO) {
+        if (vehicleModelDTO == null) {
+            throw new ValidationException("Vehicle model data is required");
+        }
+        if (vehicleModelDTO.getModelId() == null) {
+            throw new ValidationException("Model ID is required");
+        }
+        if (vehicleModelDTO.getBrandId() == null) {
+            throw new ValidationException("Brand ID is required");
+        }
+        if (vehicleModelDTO.getModelName() == null || vehicleModelDTO.getModelName().isBlank()) {
+            throw new ValidationException("Model name is required");
+        }
+        if (vehicleModelDTO.getFuelType() == null) {
+            throw new ValidationException("Fuel type is required");
+        }
+        if (vehicleModelDTO.getSeatingCapacity() == null || vehicleModelDTO.getSeatingCapacity() < 1) {
+            throw new ValidationException("Seating capacity must be at least 1");
+        }
+        if (vehicleModelDTO.getTransmissionType() == null) {
+            throw new ValidationException("Transmission type is required");
+        }
+
         Optional<VehicleModel> optionalVehicleModel = vehicleModelRepository.findById(vehicleModelDTO.getModelId());
         if (optionalVehicleModel.isEmpty()) {
             throw new NotFoundException("Vehicle model not found");
@@ -102,28 +150,35 @@ public class VehicleModelServiceImpl implements VehicleModelService {
             throw new NotFoundException("Vehicle brand not found");
         }
 
+        String modelName = vehicleModelDTO.getModelName().trim();
+
+        if (vehicleModelRepository.existsByModelNameAndBrand_BrandIdAndModelIdNot(
+                modelName, vehicleModelDTO.getBrandId(), vehicleModelDTO.getModelId())) {
+            throw new DuplicateException("Vehicle model with this name already exists for the selected brand");
+        }
+
         VehicleModel vehicleModel = optionalVehicleModel.get();
-
-        VehicleBrand vehicleBrand = optionalBrand.get();
-
-        vehicleModel.setModelName(vehicleModelDTO.getModelName());
+        vehicleModel.setModelName(modelName);
         vehicleModel.setFuelType(vehicleModelDTO.getFuelType());
         vehicleModel.setSeatingCapacity(vehicleModelDTO.getSeatingCapacity());
         vehicleModel.setTransmissionType(vehicleModelDTO.getTransmissionType());
-        vehicleModel.setBrand(vehicleBrand);
+        vehicleModel.setBrand(optionalBrand.get());
 
         vehicleModelRepository.save(vehicleModel);
-
     }
 
     @Override
     @Transactional
     public void deleteVehicleModel(Long modelId) {
-        if (!vehicleModelRepository.existsById(modelId)) {
+        if (modelId == null) {
+            throw new ValidationException("Model ID is required");
+        }
+
+        Optional<VehicleModel> optionalVehicleModel = vehicleModelRepository.findById(modelId);
+        if (optionalVehicleModel.isEmpty()) {
             throw new NotFoundException("Vehicle model not found");
         }
 
         vehicleModelRepository.deleteById(modelId);
-
     }
 }

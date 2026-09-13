@@ -6,7 +6,9 @@ import lk.ijse.aad_final_project.entity.User;
 import lk.ijse.aad_final_project.entity.Vehicle;
 import lk.ijse.aad_final_project.entity.VehicleInspection;
 import lk.ijse.aad_final_project.enums.RoleName;
+import lk.ijse.aad_final_project.exception.DuplicateException;
 import lk.ijse.aad_final_project.exception.NotFoundException;
+import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.RentalRepository;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.repository.VehicleInspectionRepository;
@@ -25,6 +27,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class VehicleInspectionServiceImpl implements VehicleInspectionService {
+
     private final VehicleInspectionRepository vehicleInspectionRepository;
     private final VehicleRepository vehicleRepository;
     private final RentalRepository rentalRepository;
@@ -33,6 +36,32 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     @Transactional
     public void saveVehicleInspection(VehicleInspectionDTO vehicleInspectionDTO) {
+        if (vehicleInspectionDTO == null) {
+            throw new ValidationException("Vehicle inspection data is required");
+        }
+        if (vehicleInspectionDTO.getVehicleId() == null) {
+            throw new ValidationException("Vehicle ID is required");
+        }
+        if (vehicleInspectionDTO.getRentalId() == null) {
+            throw new ValidationException("Rental ID is required");
+        }
+        if (vehicleInspectionDTO.getInspectedById() == null) {
+            throw new ValidationException("Inspected by user ID is required");
+        }
+        if (vehicleInspectionDTO.getInspectionType() == null) {
+            throw new ValidationException("Inspection type is required");
+        }
+        if (vehicleInspectionDTO.getFuelLevel() == null || vehicleInspectionDTO.getFuelLevel().isBlank()) {
+            throw new ValidationException("Fuel level is required");
+        }
+        if (vehicleInspectionDTO.getMileage() == null || vehicleInspectionDTO.getMileage() < 0) {
+            throw new ValidationException("Valid mileage is required");
+        }
+
+        if (vehicleInspectionRepository.existsByRental_RentalIdAndInspectionType(vehicleInspectionDTO.getRentalId(), vehicleInspectionDTO.getInspectionType())) {
+            throw new DuplicateException("Inspection of type " + vehicleInspectionDTO.getInspectionType() + " already exists for this rental");
+        }
+
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleInspectionDTO.getVehicleId());
         if (optionalVehicle.isEmpty()) {
             throw new NotFoundException("Vehicle not found");
@@ -54,19 +83,21 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
 
         RoleName roleName = inspectedBy.getRole().getRoleName();
         if (roleName != RoleName.ADMIN && roleName != RoleName.FLEET_MANAGER) {
-            throw new RuntimeException("Only Admin or Fleet Manager can perform vehicle inspection");
+            throw new ValidationException("Only Admin or Fleet Manager can perform vehicle inspection");
         }
 
         if (!rental.getVehicle().getVehicleId().equals(vehicle.getVehicleId())) {
-            throw new RuntimeException("Selected vehicle does not belong to this rental");
+            throw new ValidationException("Selected vehicle does not belong to this rental");
         }
+
+        String notes = vehicleInspectionDTO.getNotes() != null ? vehicleInspectionDTO.getNotes().trim() : null;
 
         VehicleInspection vehicleInspection = new VehicleInspection();
         vehicleInspection.setInspectionType(vehicleInspectionDTO.getInspectionType());
         vehicleInspection.setInspectionDate(vehicleInspectionDTO.getInspectionDate() != null ? vehicleInspectionDTO.getInspectionDate() : LocalDateTime.now());
-        vehicleInspection.setFuelLevel(vehicleInspectionDTO.getFuelLevel());
+        vehicleInspection.setFuelLevel(vehicleInspectionDTO.getFuelLevel().trim());
         vehicleInspection.setMileage(vehicleInspectionDTO.getMileage());
-        vehicleInspection.setNotes(vehicleInspectionDTO.getNotes());
+        vehicleInspection.setNotes(notes);
         vehicleInspection.setVehicle(vehicle);
         vehicleInspection.setRental(rental);
         vehicleInspection.setInspectedBy(inspectedBy);
@@ -100,6 +131,10 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
 
     @Override
     public VehicleInspectionDTO selectVehicleInspection(Long inspectionId) {
+        if (inspectionId == null) {
+            throw new ValidationException("Inspection ID is required");
+        }
+
         Optional<VehicleInspection> optionalInspection = vehicleInspectionRepository.findById(inspectionId);
         if (optionalInspection.isEmpty()) {
             throw new NotFoundException("Vehicle inspection not found");
@@ -124,12 +159,40 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     @Transactional
     public void updateVehicleInspection(VehicleInspectionDTO vehicleInspectionDTO) {
+        if (vehicleInspectionDTO == null) {
+            throw new ValidationException("Vehicle inspection data is required");
+        }
+        if (vehicleInspectionDTO.getInspectionId() == null) {
+            throw new ValidationException("Inspection ID is required");
+        }
+        if (vehicleInspectionDTO.getVehicleId() == null) {
+            throw new ValidationException("Vehicle ID is required");
+        }
+        if (vehicleInspectionDTO.getRentalId() == null) {
+            throw new ValidationException("Rental ID is required");
+        }
+        if (vehicleInspectionDTO.getInspectedById() == null) {
+            throw new ValidationException("Inspected by user ID is required");
+        }
+        if (vehicleInspectionDTO.getInspectionType() == null) {
+            throw new ValidationException("Inspection type is required");
+        }
+        if (vehicleInspectionDTO.getFuelLevel() == null || vehicleInspectionDTO.getFuelLevel().isBlank()) {
+            throw new ValidationException("Fuel level is required");
+        }
+        if (vehicleInspectionDTO.getMileage() == null || vehicleInspectionDTO.getMileage() < 0) {
+            throw new ValidationException("Valid mileage is required");
+        }
+
         Optional<VehicleInspection> optionalInspection = vehicleInspectionRepository.findById(vehicleInspectionDTO.getInspectionId());
         if (optionalInspection.isEmpty()) {
             throw new NotFoundException("Vehicle inspection not found");
         }
 
-        VehicleInspection inspection = optionalInspection.get();
+        if (vehicleInspectionRepository.existsByRental_RentalIdAndInspectionTypeAndInspectionIdNot(
+                vehicleInspectionDTO.getRentalId(), vehicleInspectionDTO.getInspectionType(), vehicleInspectionDTO.getInspectionId())) {
+            throw new DuplicateException("Inspection of type " + vehicleInspectionDTO.getInspectionType() + " already exists for this rental");
+        }
 
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleInspectionDTO.getVehicleId());
         if (optionalVehicle.isEmpty()) {
@@ -152,33 +215,40 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
 
         RoleName roleName = inspectedBy.getRole().getRoleName();
         if (roleName != RoleName.ADMIN && roleName != RoleName.FLEET_MANAGER) {
-            throw new RuntimeException("Only Admin or Fleet Manager can perform vehicle inspection");
+            throw new ValidationException("Only Admin or Fleet Manager can perform vehicle inspection");
         }
 
         if (!rental.getVehicle().getVehicleId().equals(vehicle.getVehicleId())) {
-            throw new RuntimeException("Selected vehicle does not belong to this rental");
+            throw new ValidationException("Selected vehicle does not belong to this rental");
         }
 
+        String notes = vehicleInspectionDTO.getNotes() != null ? vehicleInspectionDTO.getNotes().trim() : null;
+
+        VehicleInspection inspection = optionalInspection.get();
         inspection.setInspectionType(vehicleInspectionDTO.getInspectionType());
-        inspection.setInspectionDate(vehicleInspectionDTO.getInspectionDate());
-        inspection.setFuelLevel(vehicleInspectionDTO.getFuelLevel());
+        inspection.setInspectionDate(vehicleInspectionDTO.getInspectionDate() != null ? vehicleInspectionDTO.getInspectionDate() : inspection.getInspectionDate());
+        inspection.setFuelLevel(vehicleInspectionDTO.getFuelLevel().trim());
         inspection.setMileage(vehicleInspectionDTO.getMileage());
-        inspection.setNotes(vehicleInspectionDTO.getNotes());
+        inspection.setNotes(notes);
         inspection.setVehicle(vehicle);
         inspection.setRental(rental);
         inspection.setInspectedBy(inspectedBy);
 
         vehicleInspectionRepository.save(inspection);
-
     }
 
     @Override
     @Transactional
     public void deleteVehicleInspection(Long inspectionId) {
+        if (inspectionId == null) {
+            throw new ValidationException("Inspection ID is required");
+        }
 
-        if (!vehicleInspectionRepository.existsById(inspectionId)) {
+        Optional<VehicleInspection> optionalInspection = vehicleInspectionRepository.findById(inspectionId);
+        if (optionalInspection.isEmpty()) {
             throw new NotFoundException("Vehicle inspection not found");
         }
+
         vehicleInspectionRepository.deleteById(inspectionId);
     }
 }
