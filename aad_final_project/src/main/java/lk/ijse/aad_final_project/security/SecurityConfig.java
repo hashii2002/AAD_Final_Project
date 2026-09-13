@@ -151,6 +151,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/review/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/v1/review/select/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
 
+                        // Email APIs
+                        .requestMatchers("/v1/email/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+
                         .anyRequest().authenticated()
 
                 )

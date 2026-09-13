@@ -8,6 +8,7 @@ import lk.ijse.aad_final_project.exception.DuplicateException;
 import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.*;
+import lk.ijse.aad_final_project.service.EmailService;
 import lk.ijse.aad_final_project.service.RentalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +31,7 @@ public class RentalServiceImpl implements RentalService {
     private final RentalRateRepository rentalRateRepository;
     private final DriverRepository driverRepository;
     private final RentalDriverRepository rentalDriverRepository;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -66,6 +69,23 @@ public class RentalServiceImpl implements RentalService {
         Rental savedRental = rentalRepository.save(rental);
 
         manageDriverAssignment(savedRental, driverOption, rentalDTO.getDriverId());
+
+        if (customer.getUser() != null && customer.getUser().getEmail() != null) {
+            String customerEmail = customer.getUser().getEmail();
+            String customerName = customer.getUser().getFirstName();
+            String vehicleNumber = vehicle.getVehicleNo();
+            String endDateStr = rental.getEndDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+
+            emailService.sendEmail(
+                    customerEmail,
+                    "Rental Booking Confirmation - Vehicle Rental System",
+                    "Dear " + customerName + ",\n\n" +
+                            "Your rental booking has been successfully placed.\n" +
+                            "Vehicle Number: " + vehicleNumber + "\n" +
+                            "End Date: " + endDateStr + "\n\n" +
+                            "Thank you for choosing our service!"
+            );
+        }
     }
 
     @Override

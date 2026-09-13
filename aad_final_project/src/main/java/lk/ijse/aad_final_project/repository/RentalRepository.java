@@ -27,4 +27,20 @@ public interface RentalRepository extends JpaRepository<Rental,Long> {
                                     @Param("excludedStatuses") List<RentalStatus> excludedStatuses,
                                     @Param("rentalId") Long rentalId);
 
+    @Query("""
+            SELECT r
+            FROM Rental r
+            JOIN FETCH r.customer c
+            JOIN FETCH c.user u
+            LEFT JOIN FETCH r.vehicle v
+            WHERE r.endDate >= :startDate
+            AND r.endDate <= :endDate
+            AND r.status NOT IN :excludedStatuses
+            """)
+    List<Rental> findRentalsForReminder(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("excludedStatuses") List<RentalStatus> excludedStatuses
+    );
+
 }
