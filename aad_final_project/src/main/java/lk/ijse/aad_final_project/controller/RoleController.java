@@ -20,7 +20,7 @@ public class RoleController {
 
     private final RoleService roleService;
 
-    @PostMapping(value = "/save-role", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/save-role", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> saveRole(@Valid @RequestBody RoleDTO roleDTO) {
         roleService.saveRole(roleDTO);
         CommonResponse response = new CommonResponse(0, "Role Saved Successfully");
