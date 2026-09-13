@@ -3,7 +3,9 @@ package lk.ijse.aad_final_project.service.impl;
 import lk.ijse.aad_final_project.dto.DriverDTO;
 import lk.ijse.aad_final_project.entity.Driver;
 import lk.ijse.aad_final_project.entity.User;
+import lk.ijse.aad_final_project.exception.DuplicateException;
 import lk.ijse.aad_final_project.exception.NotFoundException;
+import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.DriverRepository;
 import lk.ijse.aad_final_project.repository.UserRepository;
 import lk.ijse.aad_final_project.service.DriverService;
@@ -26,17 +28,38 @@ public class DriverServiceImpl implements DriverService {
     @Override
     @Transactional
     public void saveDriver(DriverDTO driverDTO) {
-        Optional<User> optionalUser = userRepository.findById(driverDTO.getUserId());
+        if (driverDTO == null) {
+            throw new ValidationException("Driver data is required");
+        }
+        if (driverDTO.getUserId() == null) {
+            throw new ValidationException("User ID is required");
+        }
+        if (driverDTO.getLicenseNo() == null || driverDTO.getLicenseNo().isBlank()) {
+            throw new ValidationException("License number is required");
+        }
+        if (driverDTO.getStatus() == null) {
+            throw new ValidationException("Driver status is required");
+        }
 
+        String licenseNo = driverDTO.getLicenseNo().trim();
+
+        Optional<User> optionalUser = userRepository.findById(driverDTO.getUserId());
         if (optionalUser.isEmpty()) {
             throw new NotFoundException("User not found");
+        }
+
+        if (driverRepository.existsByUser_UserId(driverDTO.getUserId())) {
+            throw new DuplicateException("User is already assigned to another driver profile");
+        }
+
+        if (driverRepository.existsByLicenseNo(licenseNo)) {
+            throw new DuplicateException("License number already exists");
         }
 
         User user = optionalUser.get();
 
         Driver driver = new Driver();
-
-        driver.setLicenseNo(driverDTO.getLicenseNo());
+        driver.setLicenseNo(licenseNo);
         driver.setStatus(driverDTO.getStatus());
         driver.setUser(user);
 
@@ -49,11 +72,12 @@ public class DriverServiceImpl implements DriverService {
         List<DriverDTO> driverDTOList = new ArrayList<>();
 
         for (Driver driver : drivers) {
-
             DriverDTO driverDTO = new DriverDTO();
 
             driverDTO.setDriverId(driver.getDriverId());
-            driverDTO.setUserId(driver.getUser().getUserId());
+            if (driver.getUser() != null) {
+                driverDTO.setUserId(driver.getUser().getUserId());
+            }
             driverDTO.setLicenseNo(driver.getLicenseNo());
             driverDTO.setStatus(driver.getStatus());
 
@@ -65,9 +89,11 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public DriverDTO selectDriver(Long driverId) {
-        Optional<Driver> optionalDriver =
-                driverRepository.findById(driverId);
+        if (driverId == null) {
+            throw new ValidationException("Driver ID is required");
+        }
 
+        Optional<Driver> optionalDriver = driverRepository.findById(driverId);
         if (optionalDriver.isEmpty()) {
             throw new NotFoundException("Driver not found");
         }
@@ -75,9 +101,10 @@ public class DriverServiceImpl implements DriverService {
         Driver driver = optionalDriver.get();
 
         DriverDTO driverDTO = new DriverDTO();
-
         driverDTO.setDriverId(driver.getDriverId());
-        driverDTO.setUserId(driver.getUser().getUserId());
+        if (driver.getUser() != null) {
+            driverDTO.setUserId(driver.getUser().getUserId());
+        }
         driverDTO.setLicenseNo(driver.getLicenseNo());
         driverDTO.setStatus(driver.getStatus());
 
@@ -87,18 +114,46 @@ public class DriverServiceImpl implements DriverService {
     @Override
     @Transactional
     public void updateDriver(DriverDTO driverDTO) {
+        if (driverDTO == null) {
+            throw new ValidationException("Driver data is required");
+        }
+        if (driverDTO.getDriverId() == null) {
+            throw new ValidationException("Driver ID is required");
+        }
+        if (driverDTO.getUserId() == null) {
+            throw new ValidationException("User ID is required");
+        }
+        if (driverDTO.getLicenseNo() == null || driverDTO.getLicenseNo().isBlank()) {
+            throw new ValidationException("License number is required");
+        }
+        if (driverDTO.getStatus() == null) {
+            throw new ValidationException("Driver status is required");
+        }
 
-        Optional<Driver> optionalDriver =
-                driverRepository.findById(driverDTO.getDriverId());
-
+        Optional<Driver> optionalDriver = driverRepository.findById(driverDTO.getDriverId());
         if (optionalDriver.isEmpty()) {
             throw new NotFoundException("Driver not found");
         }
 
-        Driver driver = optionalDriver.get();
+        Optional<User> optionalUser = userRepository.findById(driverDTO.getUserId());
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("User not found");
+        }
 
-        driver.setLicenseNo(driverDTO.getLicenseNo());
+        String licenseNo = driverDTO.getLicenseNo().trim();
+
+        if (driverRepository.existsByLicenseNoAndDriverIdNot(licenseNo, driverDTO.getDriverId())) {
+            throw new DuplicateException("License number already exists");
+        }
+
+        if (driverRepository.existsByUserIdAndDriverIdNot(driverDTO.getUserId(), driverDTO.getDriverId())) {
+            throw new DuplicateException("User is already assigned to another driver profile");
+        }
+
+        Driver driver = optionalDriver.get();
+        driver.setLicenseNo(licenseNo);
         driver.setStatus(driverDTO.getStatus());
+        driver.setUser(optionalUser.get());
 
         driverRepository.save(driver);
     }
@@ -106,31 +161,41 @@ public class DriverServiceImpl implements DriverService {
     @Override
     @Transactional
     public void deleteDriver(Long driverId) {
-        if (!driverRepository.existsById(driverId)) {
+        if (driverId == null) {
+            throw new ValidationException("Driver ID is required");
+        }
+
+        Optional<Driver> optionalDriver = driverRepository.findById(driverId);
+        if (optionalDriver.isEmpty()) {
             throw new NotFoundException("Driver not found");
         }
+
         driverRepository.deleteById(driverId);
     }
 
     @Override
     public DriverDTO getDriverByUsername(String username) {
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username is required");
+        }
 
-        Optional<Driver> optionalDriver = driverRepository.findByUser_Username(username);
+        String trimmedUsername = username.trim();
 
+        Optional<Driver> optionalDriver = driverRepository.findByUser_Username(trimmedUsername);
         if (optionalDriver.isEmpty()) {
-            throw new NotFoundException("Driver not found");
+            throw new NotFoundException("Driver profile not found for the given username");
         }
 
         Driver driver = optionalDriver.get();
 
         DriverDTO driverDTO = new DriverDTO();
-
         driverDTO.setDriverId(driver.getDriverId());
-        driverDTO.setUserId(driver.getUser().getUserId());
+        if (driver.getUser() != null) {
+            driverDTO.setUserId(driver.getUser().getUserId());
+        }
         driverDTO.setLicenseNo(driver.getLicenseNo());
         driverDTO.setStatus(driver.getStatus());
 
         return driverDTO;
     }
-
 }
