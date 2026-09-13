@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,39 +34,34 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional
     public void saveInvoice(InvoiceDTO invoiceDTO) {
+        if (invoiceDTO == null) {
+            throw new ValidationException("Invoice data is required");
+        }
+        if (invoiceDTO.getRentalId() == null) {
+            throw new ValidationException("Rental ID is required");
+        }
 
         Optional<Rental> optionalRental = rentalRepository.findById(invoiceDTO.getRentalId());
-
         if (optionalRental.isEmpty()) {
             throw new NotFoundException("Rental not found");
         }
         Rental rental = optionalRental.get();
 
-        // One invoice per rental
-        if (invoiceRepository.findByRental_RentalId(rental.getRentalId()).isPresent()) {
+        if (invoiceRepository.existsByRental_RentalId(rental.getRentalId())) {
             throw new DuplicateException("Invoice already exists for this rental");
         }
 
-        Invoice invoice = new Invoice();
-
-        invoice.setIssueDate(invoiceDTO.getIssueDate() != null ? invoiceDTO.getIssueDate() : java.time.LocalDateTime.now());
-        double subTotal = rental.getTotalAmount();
+        double subTotal = rental.getTotalAmount() != null ? rental.getTotalAmount() : 0.0;
         double discount = invoiceDTO.getDiscount() != null ? invoiceDTO.getDiscount() : 0.0;
 
         if (discount < 0) {
             throw new ValidationException("Discount cannot be negative");
         }
-
         if (discount > subTotal) {
             throw new ValidationException("Discount cannot be greater than subtotal");
         }
 
         double totalAmount = subTotal - discount;
-
-        invoice.setSubTotal(subTotal);
-        invoice.setDiscount(discount);
-        invoice.setTotalAmount(totalAmount);
-
         double totalPaid = calculateTotalPaid(rental.getRentalId());
         double balance = totalAmount - totalPaid;
 
@@ -73,6 +69,11 @@ public class InvoiceServiceImpl implements InvoiceService {
             balance = 0.0;
         }
 
+        Invoice invoice = new Invoice();
+        invoice.setIssueDate(invoiceDTO.getIssueDate() != null ? invoiceDTO.getIssueDate() : LocalDateTime.now());
+        invoice.setSubTotal(subTotal);
+        invoice.setDiscount(discount);
+        invoice.setTotalAmount(totalAmount);
         invoice.setBalance(balance);
         invoice.setStatus(calculateInvoiceStatus(totalPaid, balance));
         invoice.setRental(rental);
@@ -93,9 +94,11 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceDTO selectInvoice(Long invoiceId) {
+        if (invoiceId == null) {
+            throw new ValidationException("Invoice ID is required");
+        }
 
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
-
         if (optionalInvoice.isEmpty()) {
             throw new NotFoundException("Invoice not found");
         }
@@ -106,6 +109,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional
     public void updateInvoice(InvoiceDTO invoiceDTO) {
+        if (invoiceDTO == null) {
+            throw new ValidationException("Invoice data is required");
+        }
+        if (invoiceDTO.getInvoiceId() == null) {
+            throw new ValidationException("Invoice ID is required");
+        }
 
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceDTO.getInvoiceId());
         if (optionalInvoice.isEmpty()) {
@@ -118,7 +127,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         Rental rental = invoice.getRental();
-        double subTotal = rental.getTotalAmount();
+        double subTotal = rental.getTotalAmount() != null ? rental.getTotalAmount() : 0.0;
         double discount = invoiceDTO.getDiscount() != null ? invoiceDTO.getDiscount() : 0.0;
 
         if (discount < 0) {
@@ -136,7 +145,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             balance = 0.0;
         }
 
-        invoice.setIssueDate(invoiceDTO.getIssueDate());
+        invoice.setIssueDate(invoiceDTO.getIssueDate() != null ? invoiceDTO.getIssueDate() : invoice.getIssueDate());
         invoice.setSubTotal(subTotal);
         invoice.setDiscount(discount);
         invoice.setTotalAmount(totalAmount);
@@ -149,6 +158,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional
     public void deleteInvoice(Long invoiceId) {
+        if (invoiceId == null) {
+            throw new ValidationException("Invoice ID is required");
+        }
 
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
         if (optionalInvoice.isEmpty()) {
@@ -162,14 +174,16 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         invoice.setStatus(InvoiceStatus.CANCELLED);
-
         invoiceRepository.save(invoice);
     }
 
     @Override
     public List<InvoiceDTO> getMyInvoices(String username) {
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username is required");
+        }
 
-        List<Invoice> invoices = invoiceRepository.findInvoicesByCustomerUsername(username);
+        List<Invoice> invoices = invoiceRepository.findInvoicesByCustomerUsername(username.trim());
         List<InvoiceDTO> invoiceDTOList = new ArrayList<>();
 
         for (Invoice invoice : invoices) {
@@ -180,22 +194,20 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private double calculateTotalPaid(Long rentalId) {
-
         List<Payment> payments = paymentRepository.findByRental_RentalId(rentalId);
 
         double totalPaid = 0.0;
-
-        for (Payment payment : payments) {
-
-            if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-                totalPaid += payment.getAmount();
+        if (payments != null) {
+            for (Payment payment : payments) {
+                if (payment.getPaymentStatus() == PaymentStatus.PAID && payment.getAmount() != null) {
+                    totalPaid += payment.getAmount();
+                }
             }
         }
         return totalPaid;
     }
 
     private InvoiceStatus calculateInvoiceStatus(double totalPaid, double balance) {
-
         if (balance <= 0) {
             return InvoiceStatus.PAID;
         }
@@ -206,7 +218,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private InvoiceDTO mapToDTO(Invoice invoice) {
-
         InvoiceDTO dto = new InvoiceDTO();
 
         dto.setInvoiceId(invoice.getInvoiceId());
@@ -225,14 +236,17 @@ public class InvoiceServiceImpl implements InvoiceService {
                 dto.setCustomerId(rental.getCustomer().getCustomerId());
 
                 if (rental.getCustomer().getUser() != null) {
-                    String fullName = rental.getCustomer().getUser().getFirstName() + " " + rental.getCustomer().getUser().getLastName();
-                    dto.setCustomerName(fullName);
+                    String firstName = rental.getCustomer().getUser().getFirstName() != null ? rental.getCustomer().getUser().getFirstName() : "";
+                    String lastName = rental.getCustomer().getUser().getLastName() != null ? rental.getCustomer().getUser().getLastName() : "";
+                    dto.setCustomerName((firstName + " " + lastName).trim());
                 }
             }
 
             if (rental.getPayments() != null && !rental.getPayments().isEmpty()) {
                 Payment payment = rental.getPayments().get(0);
-                dto.setPaymentId(payment.getPaymentId());
+                if (payment != null) {
+                    dto.setPaymentId(payment.getPaymentId());
+                }
             }
         }
         return dto;

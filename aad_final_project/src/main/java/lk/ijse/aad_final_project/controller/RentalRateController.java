@@ -44,6 +44,14 @@ public class RentalRateController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping(value = "/category/{categoryId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommonResponse> getRentalRateByCategoryId(@PathVariable Long categoryId) {
+        RentalRateDTO rentalRateDTO = rentalRateService.getRentalRateByCategoryId(categoryId);
+        CommonResponse response = new CommonResponse(0, rentalRateDTO, "Rental Rate Retrieved Successfully for Category");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> updateRentalRate(@Valid @RequestBody RentalRateDTO rentalRateDTO) {
         rentalRateService.updateRentalRate(rentalRateDTO);

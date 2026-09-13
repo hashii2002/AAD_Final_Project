@@ -5,7 +5,9 @@ import lk.ijse.aad_final_project.dto.RentalDriverDTO;
 import lk.ijse.aad_final_project.entity.Driver;
 import lk.ijse.aad_final_project.entity.Rental;
 import lk.ijse.aad_final_project.entity.RentalDriver;
+import lk.ijse.aad_final_project.exception.DuplicateException;
 import lk.ijse.aad_final_project.exception.NotFoundException;
+import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.DriverRepository;
 import lk.ijse.aad_final_project.repository.RentalDriverRepository;
 import lk.ijse.aad_final_project.repository.RentalRepository;
@@ -30,14 +32,14 @@ public class RentalDriverServiceImpl implements RentalDriverService {
     @Override
     @Transactional
     public void saveRentalDriver(RentalDriverDTO rentalDriverDTO) {
-        Optional<Rental> optionalRental = rentalRepository.findById(rentalDriverDTO.getRentalId());
+        validateRentalDriverDTO(rentalDriverDTO);
 
+        Optional<Rental> optionalRental = rentalRepository.findById(rentalDriverDTO.getRentalId());
         if (optionalRental.isEmpty()) {
             throw new NotFoundException("Rental not found");
         }
 
         Optional<Driver> optionalDriver = driverRepository.findById(rentalDriverDTO.getDriverId());
-
         if (optionalDriver.isEmpty()) {
             throw new NotFoundException("Driver not found");
         }
@@ -45,8 +47,11 @@ public class RentalDriverServiceImpl implements RentalDriverService {
         Rental rental = optionalRental.get();
         Driver driver = optionalDriver.get();
 
-        RentalDriver rentalDriver = new RentalDriver();
+        if (rentalDriverRepository.existsByRental_RentalIdAndDriver_DriverId(rental.getRentalId(), driver.getDriverId())) {
+            throw new DuplicateException("This driver is already assigned to the specified rental");
+        }
 
+        RentalDriver rentalDriver = new RentalDriver();
         rentalDriver.setRental(rental);
         rentalDriver.setDriver(driver);
 
@@ -56,55 +61,63 @@ public class RentalDriverServiceImpl implements RentalDriverService {
     @Override
     public List<RentalDriverDTO> getAllRentalDrivers() {
         List<RentalDriver> rentalDrivers = rentalDriverRepository.findAll();
-
         List<RentalDriverDTO> rentalDriverDTOList = new ArrayList<>();
 
         for (RentalDriver rentalDriver : rentalDrivers) {
-
-            RentalDriverDTO rentalDriverDTO = mapToRentalDriverDTO(rentalDriver);
-            rentalDriverDTOList.add(rentalDriverDTO);
+            rentalDriverDTOList.add(mapToRentalDriverDTO(rentalDriver));
         }
         return rentalDriverDTOList;
     }
 
     @Override
     public RentalDriverDTO selectRentalDriver(Long rentalDriverId) {
-        Optional<RentalDriver> optionalRentalDriver = rentalDriverRepository.findById(rentalDriverId);
-
-        if (optionalRentalDriver.isEmpty()) {
-            throw new NotFoundException("Rental driver not found");
+        if (rentalDriverId == null) {
+            throw new ValidationException("Rental Driver ID is required");
         }
 
-        RentalDriver rentalDriver = optionalRentalDriver.get();
+        Optional<RentalDriver> optionalRentalDriver = rentalDriverRepository.findById(rentalDriverId);
+        if (optionalRentalDriver.isEmpty()) {
+            throw new NotFoundException("Rental driver record not found");
+        }
 
-        return mapToRentalDriverDTO(rentalDriver);
+        return mapToRentalDriverDTO(optionalRentalDriver.get());
     }
 
     @Override
     @Transactional
     public void updateRentalDriver(RentalDriverDTO rentalDriverDTO) {
-        Optional<RentalDriver> optionalRentalDriver = rentalDriverRepository.findById(rentalDriverDTO.getRentalDriverId());
+        if (rentalDriverDTO == null) {
+            throw new ValidationException("Rental driver data is required");
+        }
+        if (rentalDriverDTO.getRentalDriverId() == null) {
+            throw new ValidationException("Rental Driver ID is required for update");
+        }
 
+        validateRentalDriverDTO(rentalDriverDTO);
+
+        Optional<RentalDriver> optionalRentalDriver = rentalDriverRepository.findById(rentalDriverDTO.getRentalDriverId());
         if (optionalRentalDriver.isEmpty()) {
-            throw new NotFoundException("Rental driver not found");
+            throw new NotFoundException("Rental driver record not found");
         }
 
         Optional<Rental> optionalRental = rentalRepository.findById(rentalDriverDTO.getRentalId());
-
         if (optionalRental.isEmpty()) {
             throw new NotFoundException("Rental not found");
         }
 
         Optional<Driver> optionalDriver = driverRepository.findById(rentalDriverDTO.getDriverId());
-
         if (optionalDriver.isEmpty()) {
             throw new NotFoundException("Driver not found");
         }
 
         RentalDriver rentalDriver = optionalRentalDriver.get();
-
         Rental rental = optionalRental.get();
         Driver driver = optionalDriver.get();
+
+        if (rentalDriverRepository.existsByRental_RentalIdAndDriver_DriverIdAndRentalDriverIdNot(
+                rental.getRentalId(), driver.getDriverId(), rentalDriver.getRentalDriverId())) {
+            throw new DuplicateException("This driver is already assigned to the specified rental");
+        }
 
         rentalDriver.setRental(rental);
         rentalDriver.setDriver(driver);
@@ -115,64 +128,98 @@ public class RentalDriverServiceImpl implements RentalDriverService {
     @Override
     @Transactional
     public void deleteRentalDriver(Long rentalDriverId) {
+        if (rentalDriverId == null) {
+            throw new ValidationException("Rental Driver ID is required");
+        }
+
         if (!rentalDriverRepository.existsById(rentalDriverId)) {
-            throw new NotFoundException("Rental driver not found");
+            throw new NotFoundException("Rental driver record not found");
         }
 
         rentalDriverRepository.deleteById(rentalDriverId);
-
     }
 
     @Override
     public List<RentalDTO> getMyRentals(String username) {
-        List<Rental> rentals = rentalDriverRepository.findRentalsByDriverUsername(username);
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username is required");
+        }
 
+        List<Rental> rentals = rentalDriverRepository.findRentalsByDriverUsername(username.trim());
         List<RentalDTO> rentalDTOList = new ArrayList<>();
 
         for (Rental rental : rentals) {
-            RentalDTO rentalDTO = new RentalDTO();
-            rentalDTO.setRentalId(rental.getRentalId());
-            rentalDTO.setStartDate(rental.getStartDate());
-            rentalDTO.setEndDate(rental.getEndDate());
-            rentalDTO.setRentalDays(rental.getRentalDays());
-            rentalDTO.setPickupMileage(rental.getPickupMileage());
-            rentalDTO.setReturnMileage(rental.getReturnMileage());
-            rentalDTO.setDepositAmount(rental.getDepositAmount());
-            rentalDTO.setStatus(rental.getStatus());
-            rentalDTO.setTotalAmount(rental.getTotalAmount());
-            rentalDTO.setDriverOption(rental.getDriverOption());
-            rentalDTO.setCustomerId(rental.getCustomer().getCustomerId());
-            rentalDTO.setVehicleId(rental.getVehicle().getVehicleId());
-            rentalDTO.setRentalRateId(rental.getRentalRate().getRateId());
-
-            if (rental.getRentalDrivers() != null && !rental.getRentalDrivers().isEmpty()) {
-                rentalDTO.setDriverId(rental.getRentalDrivers().get(0).getDriver().getDriverId());
-            }
-
-            rentalDTOList.add(rentalDTO);
+            rentalDTOList.add(mapToRentalDTO(rental));
         }
 
         return rentalDTOList;
     }
 
-    private RentalDriverDTO mapToRentalDriverDTO(RentalDriver rentalDriver) {
-        RentalDriverDTO rentalDriverDTO = new RentalDriverDTO();
+    private void validateRentalDriverDTO(RentalDriverDTO dto) {
+        if (dto == null) {
+            throw new ValidationException("Rental driver data is required");
+        }
+        if (dto.getRentalId() == null) {
+            throw new ValidationException("Rental ID is required");
+        }
+        if (dto.getDriverId() == null) {
+            throw new ValidationException("Driver ID is required");
+        }
+    }
 
-        rentalDriverDTO.setRentalDriverId(rentalDriver.getRentalDriverId());
-        rentalDriverDTO.setRentalId(rentalDriver.getRental().getRentalId());
+    private RentalDriverDTO mapToRentalDriverDTO(RentalDriver rentalDriver) {
+        RentalDriverDTO dto = new RentalDriverDTO();
+        dto.setRentalDriverId(rentalDriver.getRentalDriverId());
+
+        if (rentalDriver.getRental() != null) {
+            dto.setRentalId(rentalDriver.getRental().getRentalId());
+        }
 
         if (rentalDriver.getDriver() != null) {
             Driver driver = rentalDriver.getDriver();
-            rentalDriverDTO.setDriverId(driver.getDriverId());
-            rentalDriverDTO.setDriverLicenseNo(driver.getLicenseNo());
+            dto.setDriverId(driver.getDriverId());
+            dto.setDriverLicenseNo(driver.getLicenseNo());
 
             if (driver.getUser() != null) {
-                rentalDriverDTO.setDriverName(driver.getUser().getFirstName() + " " + driver.getUser().getLastName());
-                rentalDriverDTO.setDriverPhone(driver.getUser().getPhone());
+                String firstName = driver.getUser().getFirstName() != null ? driver.getUser().getFirstName() : "";
+                String lastName = driver.getUser().getLastName() != null ? driver.getUser().getLastName() : "";
+                dto.setDriverName((firstName + " " + lastName).trim());
+                dto.setDriverPhone(driver.getUser().getPhone());
             }
         }
 
-        return rentalDriverDTO;
+        return dto;
     }
 
+    private RentalDTO mapToRentalDTO(Rental rental) {
+        RentalDTO dto = new RentalDTO();
+        dto.setRentalId(rental.getRentalId());
+        dto.setStartDate(rental.getStartDate());
+        dto.setEndDate(rental.getEndDate());
+        dto.setRentalDays(rental.getRentalDays());
+        dto.setPickupMileage(rental.getPickupMileage());
+        dto.setReturnMileage(rental.getReturnMileage());
+        dto.setDepositAmount(rental.getDepositAmount());
+        dto.setStatus(rental.getStatus());
+        dto.setTotalAmount(rental.getTotalAmount());
+        dto.setDriverOption(rental.getDriverOption());
+
+        if (rental.getCustomer() != null) {
+            dto.setCustomerId(rental.getCustomer().getCustomerId());
+        }
+        if (rental.getVehicle() != null) {
+            dto.setVehicleId(rental.getVehicle().getVehicleId());
+        }
+        if (rental.getRentalRate() != null) {
+            dto.setRentalRateId(rental.getRentalRate().getRateId());
+        }
+        if (rental.getRentalDrivers() != null && !rental.getRentalDrivers().isEmpty()) {
+            RentalDriver firstRentalDriver = rental.getRentalDrivers().get(0);
+            if (firstRentalDriver != null && firstRentalDriver.getDriver() != null) {
+                dto.setDriverId(firstRentalDriver.getDriver().getDriverId());
+            }
+        }
+
+        return dto;
+    }
 }

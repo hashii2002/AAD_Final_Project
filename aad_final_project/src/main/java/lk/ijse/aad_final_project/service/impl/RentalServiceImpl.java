@@ -4,6 +4,7 @@ import lk.ijse.aad_final_project.dto.RentalDTO;
 import lk.ijse.aad_final_project.entity.*;
 import lk.ijse.aad_final_project.enums.DriverOption;
 import lk.ijse.aad_final_project.enums.RentalStatus;
+import lk.ijse.aad_final_project.exception.DuplicateException;
 import lk.ijse.aad_final_project.exception.NotFoundException;
 import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.*;
@@ -12,9 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,44 +27,26 @@ public class RentalServiceImpl implements RentalService {
     private final CustomerRepository customerRepository;
     private final VehicleRepository vehicleRepository;
     private final RentalRateRepository rentalRateRepository;
-    private final UserRepository userRepository;
     private final DriverRepository driverRepository;
     private final RentalDriverRepository rentalDriverRepository;
 
     @Override
     @Transactional
     public void saveRental(RentalDTO rentalDTO) {
-        Optional<Customer> optionalCustomer = customerRepository.findById(rentalDTO.getCustomerId());
-        if (optionalCustomer.isEmpty()) {
-            throw new NotFoundException("Customer not found");
-        }
+        validateRentalDTO(rentalDTO);
 
-        Optional<Vehicle> optionalVehicle = vehicleRepository.findById(rentalDTO.getVehicleId());
-        if (optionalVehicle.isEmpty()) {
-            throw new NotFoundException("Vehicle not found");
-        }
+        Customer customer = customerRepository.findById(rentalDTO.getCustomerId()).orElseThrow(() -> new NotFoundException("Customer not found"));
 
-        Optional<RentalRate> optionalRentalRate = rentalRateRepository.findById(rentalDTO.getRentalRateId());
-        if (optionalRentalRate.isEmpty()) {
-            throw new NotFoundException("Rental rate not found");
-        }
+        Vehicle vehicle = vehicleRepository.findById(rentalDTO.getVehicleId()).orElseThrow(() -> new NotFoundException("Vehicle not found"));
 
-        Customer customer = optionalCustomer.get();
-        Vehicle vehicle = optionalVehicle.get();
-        RentalRate rentalRate = optionalRentalRate.get();
+        RentalRate rentalRate = resolveRentalRate(rentalDTO, vehicle);
 
-        // ------------ Rental Days Auto Calculation ----------------
-        long calculatedDays = java.time.Duration.between(rentalDTO.getStartDate(), rentalDTO.getEndDate()).toDays();
-        if (calculatedDays <= 0) {
-            throw new ValidationException("Invalid rental duration. End date must be after start date.");
-        }
-        int rentalDays = (int) calculatedDays;
+        validateVehicleAvailability(vehicle.getVehicleId(), rentalDTO.getStartDate(), rentalDTO.getEndDate(), null);
 
-        // ----------- Total Amount Auto Calculation ----------------
+        int rentalDays = calculateRentalDays(rentalDTO.getStartDate(), rentalDTO.getEndDate());
         double totalAmount = calculateTotalAmount(rentalDays, rentalRate);
 
         Rental rental = new Rental();
-
         rental.setStartDate(rentalDTO.getStartDate());
         rental.setEndDate(rentalDTO.getEndDate());
         rental.setRentalDays(rentalDays);
@@ -81,19 +65,155 @@ public class RentalServiceImpl implements RentalService {
 
         Rental savedRental = rentalRepository.save(rental);
 
-        if (DriverOption.WITH_DRIVER.equals(driverOption)) {
-            if (rentalDTO.getDriverId() == null) {
-                throw new ValidationException("Driver ID is required when WITH_DRIVER option is selected");
-            }
+        manageDriverAssignment(savedRental, driverOption, rentalDTO.getDriverId());
+    }
 
-            Driver driver = driverRepository.findById(rentalDTO.getDriverId()).orElseThrow(() -> new NotFoundException("Driver not found"));
+    @Override
+    public List<RentalDTO> getAllRentals() {
+        List<Rental> rentals = rentalRepository.findAll();
+        List<RentalDTO> rentalDTOList = new ArrayList<>();
 
-            RentalDriver rentalDriver = new RentalDriver();
-            rentalDriver.setRental(savedRental);
-            rentalDriver.setDriver(driver);
-
-            rentalDriverRepository.save(rentalDriver);
+        for (Rental rental : rentals) {
+            rentalDTOList.add(mapToRentalDTO(rental));
         }
+        return rentalDTOList;
+    }
+
+    @Override
+    public RentalDTO selectRental(Long rentalId) {
+        if (rentalId == null) {
+            throw new ValidationException("Rental ID is required");
+        }
+
+        Rental rental = rentalRepository.findById(rentalId).orElseThrow(() -> new NotFoundException("Rental record not found"));
+
+        return mapToRentalDTO(rental);
+    }
+
+    @Override
+    @Transactional
+    public void updateRental(RentalDTO rentalDTO) {
+        if (rentalDTO == null || rentalDTO.getRentalId() == null) {
+            throw new ValidationException("Rental ID is required for update");
+        }
+
+        validateRentalDTO(rentalDTO);
+
+        Rental rental = rentalRepository.findById(rentalDTO.getRentalId()).orElseThrow(() -> new NotFoundException("Rental record not found"));
+        Customer customer = customerRepository.findById(rentalDTO.getCustomerId()).orElseThrow(() -> new NotFoundException("Customer not found"));
+        Vehicle vehicle = vehicleRepository.findById(rentalDTO.getVehicleId()).orElseThrow(() -> new NotFoundException("Vehicle not found"));
+
+        RentalRate rentalRate = resolveRentalRate(rentalDTO, vehicle);
+
+        validateVehicleAvailability(vehicle.getVehicleId(), rentalDTO.getStartDate(), rentalDTO.getEndDate(), rental.getRentalId());
+
+        int rentalDays = calculateRentalDays(rentalDTO.getStartDate(), rentalDTO.getEndDate());
+        double totalAmount = calculateTotalAmount(rentalDays, rentalRate);
+
+        rental.setStartDate(rentalDTO.getStartDate());
+        rental.setEndDate(rentalDTO.getEndDate());
+        rental.setRentalDays(rentalDays);
+        rental.setPickupMileage(rentalDTO.getPickupMileage());
+        rental.setReturnMileage(rentalDTO.getReturnMileage());
+        rental.setDepositAmount(rentalDTO.getDepositAmount());
+
+        if (rentalDTO.getStatus() != null) {
+            rental.setStatus(rentalDTO.getStatus());
+        }
+
+        rental.setTotalAmount(totalAmount);
+
+        DriverOption driverOption = rentalDTO.getDriverOption() != null ? rentalDTO.getDriverOption() : DriverOption.WITHOUT_DRIVER;
+        rental.setDriverOption(driverOption);
+
+        rental.setCustomer(customer);
+        rental.setVehicle(vehicle);
+        rental.setRentalRate(rentalRate);
+
+        Rental updatedRental = rentalRepository.save(rental);
+
+        manageDriverAssignment(updatedRental, driverOption, rentalDTO.getDriverId());
+    }
+
+    @Override
+    @Transactional
+    public void deleteRental(Long rentalId) {
+        if (rentalId == null) {
+            throw new ValidationException("Rental ID is required");
+        }
+
+        Rental rental = rentalRepository.findById(rentalId).orElseThrow(() -> new NotFoundException("Rental record not found"));
+
+        rental.setStatus(RentalStatus.CANCELLED);
+        rentalRepository.save(rental);
+    }
+
+    @Override
+    public List<RentalDTO> getMyRentals(String username) {
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username is required");
+        }
+
+        List<Rental> rentals = rentalRepository.findByCustomer_User_Username(username.trim());
+        List<RentalDTO> rentalDTOList = new ArrayList<>();
+
+        for (Rental rental : rentals) {
+            rentalDTOList.add(mapToRentalDTO(rental));
+        }
+
+        return rentalDTOList;
+    }
+
+    private void validateRentalDTO(RentalDTO dto) {
+        if (dto == null) {
+            throw new ValidationException("Rental data is required");
+        }
+        if (dto.getStartDate() == null || dto.getEndDate() == null) {
+            throw new ValidationException("Start date and End date are required");
+        }
+        if (!dto.getEndDate().isAfter(dto.getStartDate())) {
+            throw new ValidationException("End date must be after start date");
+        }
+        if (dto.getPickupMileage() == null || dto.getPickupMileage() < 0) {
+            throw new ValidationException("Pickup mileage must be non-negative");
+        }
+        if (dto.getReturnMileage() != null && dto.getReturnMileage() < dto.getPickupMileage()) {
+            throw new ValidationException("Return mileage cannot be less than pickup mileage");
+        }
+        if (dto.getDepositAmount() == null || dto.getDepositAmount() < 0) {
+            throw new ValidationException("Deposit amount must be non-negative");
+        }
+        if (dto.getCustomerId() == null) {
+            throw new ValidationException("Customer ID is required");
+        }
+        if (dto.getVehicleId() == null) {
+            throw new ValidationException("Vehicle ID is required");
+        }
+    }
+
+    private void validateVehicleAvailability(Long vehicleId, LocalDateTime startDate, LocalDateTime endDate, Long rentalId) {
+        List<RentalStatus> excludedStatuses = List.of(RentalStatus.CANCELLED, RentalStatus.COMPLETED);
+        boolean exists = rentalRepository.existsOverlappingRental(vehicleId, startDate, endDate, excludedStatuses, rentalId);
+        if (exists) {
+            throw new DuplicateException("Vehicle is already booked for the selected date range");
+        }
+    }
+
+    private RentalRate resolveRentalRate(RentalDTO dto, Vehicle vehicle) {
+        if (dto.getRentalRateId() != null) {
+            return rentalRateRepository.findById(dto.getRentalRateId()).orElseThrow(() -> new NotFoundException("Specified rental rate not found"));
+        }
+
+        if (vehicle.getCategory() != null) {
+            return rentalRateRepository.findByCategory_CategoryId(vehicle.getCategory().getCategoryId()).orElseThrow(() -> new NotFoundException("No rental rate defined for this vehicle's category"));
+        }
+
+        throw new ValidationException("Rental rate ID or category rate must be available");
+    }
+
+    private int calculateRentalDays(LocalDateTime startDate, LocalDateTime endDate) {
+        long days = Duration.between(startDate, endDate).toDays();
+        return days <= 0 ? 1 : (int) days;
     }
 
     private double calculateTotalAmount(int rentalDays, RentalRate rentalRate) {
@@ -109,142 +229,16 @@ public class RentalServiceImpl implements RentalService {
         }
     }
 
-    @Override
-    public List<RentalDTO> getAllRentals() {
-        List<Rental> rentals = rentalRepository.findAll();
+    private void manageDriverAssignment(Rental rental, DriverOption driverOption, Long driverId) {
+        List<RentalDriver> existingRentalDrivers = rental.getRentalDrivers();
 
-        List<RentalDTO> rentalDTOList = new ArrayList<>();
-
-        for (Rental rental : rentals) {
-
-            RentalDTO rentalDTO = new RentalDTO();
-
-            rentalDTO.setRentalId(rental.getRentalId());
-            rentalDTO.setStartDate(rental.getStartDate());
-            rentalDTO.setEndDate(rental.getEndDate());
-            rentalDTO.setRentalDays(rental.getRentalDays());
-            rentalDTO.setPickupMileage(rental.getPickupMileage());
-            rentalDTO.setReturnMileage(rental.getReturnMileage());
-            rentalDTO.setDepositAmount(rental.getDepositAmount());
-            rentalDTO.setStatus(rental.getStatus());
-            rentalDTO.setTotalAmount(rental.getTotalAmount());
-            rentalDTO.setCustomerId(rental.getCustomer().getCustomerId());
-            rentalDTO.setVehicleId(rental.getVehicle().getVehicleId());
-            rentalDTO.setRentalRateId(rental.getRentalRate().getRateId());
-
-            rentalDTO.setDriverOption(rental.getDriverOption());
-
-            if (rental.getRentalDrivers() != null && !rental.getRentalDrivers().isEmpty()) {
-                rentalDTO.setDriverId(rental.getRentalDrivers().get(0).getDriver().getDriverId());
-            }
-            rentalDTOList.add(rentalDTO);
-        }
-        return rentalDTOList;
-    }
-
-    @Override
-    public RentalDTO selectRental(Long rentalId) {
-        Optional<Rental> optionalRental = rentalRepository.findById(rentalId);
-
-        if (optionalRental.isEmpty()) {
-            throw new NotFoundException("Rental not found");
-        }
-
-        Rental rental = optionalRental.get();
-
-        RentalDTO rentalDTO = new RentalDTO();
-
-        rentalDTO.setRentalId(rental.getRentalId());
-        rentalDTO.setStartDate(rental.getStartDate());
-        rentalDTO.setEndDate(rental.getEndDate());
-        rentalDTO.setRentalDays(rental.getRentalDays());
-        rentalDTO.setPickupMileage(rental.getPickupMileage());
-        rentalDTO.setReturnMileage(rental.getReturnMileage());
-        rentalDTO.setDepositAmount(rental.getDepositAmount());
-        rentalDTO.setStatus(rental.getStatus());
-        rentalDTO.setTotalAmount(rental.getTotalAmount());
-        rentalDTO.setCustomerId(rental.getCustomer().getCustomerId());
-        rentalDTO.setVehicleId(rental.getVehicle().getVehicleId());
-        rentalDTO.setRentalRateId(rental.getRentalRate().getRateId());
-        rentalDTO.setDriverOption(rental.getDriverOption());
-
-        if (rental.getRentalDrivers() != null && !rental.getRentalDrivers().isEmpty()) {
-            rentalDTO.setDriverId(rental.getRentalDrivers().get(0).getDriver().getDriverId());
-        }
-        return rentalDTO;
-    }
-
-    @Override
-    @Transactional
-    public void updateRental(RentalDTO rentalDTO) {
-        Optional<Rental> optionalRental = rentalRepository.findById(rentalDTO.getRentalId());
-        if (optionalRental.isEmpty()) {
-            throw new NotFoundException("Rental not found");
-        }
-
-        Optional<Customer> optionalCustomer = customerRepository.findById(rentalDTO.getCustomerId());
-        if (optionalCustomer.isEmpty()) {
-            throw new NotFoundException("Customer not found");
-        }
-
-        Optional<Vehicle> optionalVehicle = vehicleRepository.findById(rentalDTO.getVehicleId());
-        if (optionalVehicle.isEmpty()) {
-            throw new NotFoundException("Vehicle not found");
-        }
-        Optional<RentalRate> optionalRentalRate = rentalRateRepository.findById(rentalDTO.getRentalRateId());
-        if (optionalRentalRate.isEmpty()) {
-            throw new NotFoundException("Rental rate not found");
-        }
-
-        Rental rental = optionalRental.get();
-        Customer customer = optionalCustomer.get();
-        Vehicle vehicle = optionalVehicle.get();
-        RentalRate rentalRate = optionalRentalRate.get();
-
-        // ------------ Rental Days Auto Recalculation ----------------
-        long calculatedDays = java.time.Duration.between(rentalDTO.getStartDate(), rentalDTO.getEndDate()).toDays();
-        if (calculatedDays <= 0) {
-            throw new ValidationException("Invalid rental duration.");
-        }
-        int rentalDays = (int) calculatedDays;
-
-        // ----------- Total Amount Auto Recalculation ----------------
-        double totalAmount = calculateTotalAmount(rentalDays, rentalRate);
-
-        rental.setStartDate(rentalDTO.getStartDate());
-        rental.setEndDate(rentalDTO.getEndDate());
-        rental.setRentalDays(rentalDays);
-        rental.setPickupMileage(rentalDTO.getPickupMileage());
-        rental.setReturnMileage(rentalDTO.getReturnMileage());
-        rental.setDepositAmount(rentalDTO.getDepositAmount());
-
-        if (rentalDTO.getStatus() != null) {
-            rental.setStatus(rentalDTO.getStatus());
-        }
-        rental.setTotalAmount(totalAmount);
-
-        DriverOption driverOption = rentalDTO.getDriverOption() != null ? rentalDTO.getDriverOption() : DriverOption.WITHOUT_DRIVER;
-        rental.setDriverOption(driverOption);
-
-        rental.setCustomer(customer);
-        rental.setVehicle(vehicle);
-        rental.setRentalRate(rentalRate);
-
-        Rental updatedRental = rentalRepository.save(rental);
-
-        // ------------ Driver Option & Assignment Management ----------------
         if (DriverOption.WITH_DRIVER.equals(driverOption)) {
-            if (rentalDTO.getDriverId() == null) {
+            if (driverId == null) {
                 throw new ValidationException("Driver ID is required when WITH_DRIVER option is selected");
             }
 
-            Optional<Driver> optionalDriver = driverRepository.findById(rentalDTO.getDriverId());
-            if (optionalDriver.isEmpty()) {
-                throw new NotFoundException("Driver not found");
-            }
-            Driver driver = optionalDriver.get();
-
-            List<RentalDriver> existingRentalDrivers = updatedRental.getRentalDrivers();
+            Driver driver = driverRepository.findById(driverId)
+                    .orElseThrow(() -> new NotFoundException("Driver not found"));
 
             if (existingRentalDrivers != null && !existingRentalDrivers.isEmpty()) {
                 RentalDriver rentalDriver = existingRentalDrivers.get(0);
@@ -252,63 +246,49 @@ public class RentalServiceImpl implements RentalService {
                 rentalDriverRepository.save(rentalDriver);
             } else {
                 RentalDriver newRentalDriver = new RentalDriver();
-                newRentalDriver.setRental(updatedRental);
+                newRentalDriver.setRental(rental);
                 newRentalDriver.setDriver(driver);
                 rentalDriverRepository.save(newRentalDriver);
             }
         } else {
-            List<RentalDriver> existingRentalDrivers = updatedRental.getRentalDrivers();
             if (existingRentalDrivers != null && !existingRentalDrivers.isEmpty()) {
                 rentalDriverRepository.deleteAll(existingRentalDrivers);
+                existingRentalDrivers.clear();
+            }
+        }
+    }
+
+    private RentalDTO mapToRentalDTO(Rental rental) {
+        RentalDTO dto = new RentalDTO();
+        dto.setRentalId(rental.getRentalId());
+        dto.setStartDate(rental.getStartDate());
+        dto.setEndDate(rental.getEndDate());
+        dto.setRentalDays(rental.getRentalDays());
+        dto.setPickupMileage(rental.getPickupMileage());
+        dto.setReturnMileage(rental.getReturnMileage());
+        dto.setDepositAmount(rental.getDepositAmount());
+        dto.setStatus(rental.getStatus());
+        dto.setTotalAmount(rental.getTotalAmount());
+
+        if (rental.getCustomer() != null) {
+            dto.setCustomerId(rental.getCustomer().getCustomerId());
+        }
+        if (rental.getVehicle() != null) {
+            dto.setVehicleId(rental.getVehicle().getVehicleId());
+        }
+        if (rental.getRentalRate() != null) {
+            dto.setRentalRateId(rental.getRentalRate().getRateId());
+        }
+
+        dto.setDriverOption(rental.getDriverOption());
+
+        if (rental.getRentalDrivers() != null && !rental.getRentalDrivers().isEmpty()) {
+            RentalDriver rentalDriver = rental.getRentalDrivers().get(0);
+            if (rentalDriver != null && rentalDriver.getDriver() != null) {
+                dto.setDriverId(rentalDriver.getDriver().getDriverId());
             }
         }
 
-    }
-
-    @Override
-    @Transactional
-    public void deleteRental(Long rentalId) {
-
-        Optional<Rental> optionalRental = rentalRepository.findById(rentalId);
-
-        if (optionalRental.isEmpty()) {
-            throw new NotFoundException("Rental not found");
-        }
-
-        Rental rental = optionalRental.get();
-        rental.setStatus(RentalStatus.CANCELLED);
-        rentalRepository.save(rental);
-    }
-
-    @Override
-    public List<RentalDTO> getMyRentals(String username) {
-
-        List<Rental> rentals = rentalRepository.findByCustomer_User_Username(username);
-        List<RentalDTO> rentalDTOList = new ArrayList<>();
-
-        for (Rental rental : rentals) {
-
-            RentalDTO rentalDTO = new RentalDTO();
-
-            rentalDTO.setRentalId(rental.getRentalId());
-            rentalDTO.setStartDate(rental.getStartDate());
-            rentalDTO.setEndDate(rental.getEndDate());
-            rentalDTO.setRentalDays(rental.getRentalDays());
-            rentalDTO.setPickupMileage(rental.getPickupMileage());
-            rentalDTO.setReturnMileage(rental.getReturnMileage());
-            rentalDTO.setDepositAmount(rental.getDepositAmount());
-            rentalDTO.setStatus(rental.getStatus());
-            rentalDTO.setTotalAmount(rental.getTotalAmount());
-            rentalDTO.setCustomerId(rental.getCustomer().getCustomerId());
-            rentalDTO.setVehicleId(rental.getVehicle().getVehicleId());
-            rentalDTO.setRentalRateId(rental.getRentalRate().getRateId());
-            rentalDTO.setDriverOption(rental.getDriverOption());
-
-            if (rental.getRentalDrivers() != null && !rental.getRentalDrivers().isEmpty()) {
-                rentalDTO.setDriverId(rental.getRentalDrivers().get(0).getDriver().getDriverId());
-            }
-            rentalDTOList.add(rentalDTO);
-        }
-        return rentalDTOList;
+        return dto;
     }
 }

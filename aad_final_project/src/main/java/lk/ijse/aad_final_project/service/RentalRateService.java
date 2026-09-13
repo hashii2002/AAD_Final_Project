@@ -15,4 +15,6 @@ public interface RentalRateService {
     void updateRentalRate(RentalRateDTO rentalRateDTO);
 
     void deleteRentalRate(Long rateId);
+
+    RentalRateDTO getRentalRateByCategoryId(Long categoryId);
 }

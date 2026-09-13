@@ -4,7 +4,10 @@ import lk.ijse.aad_final_project.dto.ReviewDTO;
 import lk.ijse.aad_final_project.entity.Customer;
 import lk.ijse.aad_final_project.entity.Rental;
 import lk.ijse.aad_final_project.entity.Review;
+import lk.ijse.aad_final_project.enums.RentalStatus;
+import lk.ijse.aad_final_project.exception.DuplicateException;
 import lk.ijse.aad_final_project.exception.NotFoundException;
+import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.CustomerRepository;
 import lk.ijse.aad_final_project.repository.RentalRepository;
 import lk.ijse.aad_final_project.repository.ReviewRepository;
@@ -15,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,44 +31,31 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public void saveReview(ReviewDTO reviewDTO, String username) {
+        validateReviewDTO(reviewDTO);
 
-        if (reviewDTO.getRating() == null || reviewDTO.getRating() < 1 || reviewDTO.getRating() > 5) {
-            throw new RuntimeException("Rating must be between 1 and 5");
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username is required");
         }
 
-        if (reviewDTO.getRentalId() == null) {
-            throw new RuntimeException("Rental ID is required");
-        }
+        Customer customer = customerRepository.findCustomerByUsername(username.trim())
+                .orElseThrow(() -> new NotFoundException("Customer not found for username: " + username));
 
-        Optional<Customer> optionalCustomer = customerRepository.findCustomerByUsername(username);
-        if (optionalCustomer.isEmpty()) {
-            throw new NotFoundException("Customer not found");
-        }
-
-        Customer customer = optionalCustomer.get();
-
-        Optional<Rental> optionalRental = rentalRepository.findById(reviewDTO.getRentalId());
-        if (optionalRental.isEmpty()) {
-            throw new NotFoundException("Rental not found");
-        }
-
-        Rental rental = optionalRental.get();
+        Rental rental = rentalRepository.findById(reviewDTO.getRentalId())
+                .orElseThrow(() -> new NotFoundException("Rental record not found"));
 
         if (!rental.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
-            throw new RuntimeException("You can only review your own rental");
+            throw new ValidationException("You can only review your own rental");
         }
 
-        Optional<Review> existingReview = reviewRepository.findByRental_RentalId(rental.getRentalId());
-        if (existingReview.isPresent()) {
-            throw new RuntimeException("This rental already has a review");
+        if (!RentalStatus.COMPLETED.equals(rental.getStatus())) {
+            throw new ValidationException("You can review the rental only after it is completed");
         }
 
-        if (rental.getStatus() != null && !rental.getStatus().name().equals("COMPLETED")) {
-            throw new RuntimeException("You can review the rental only after it is completed");
+        if (reviewRepository.existsByRental_RentalId(rental.getRentalId())) {
+            throw new DuplicateException("This rental already has an associated review");
         }
 
         Review review = new Review();
-
         review.setRating(reviewDTO.getRating());
         review.setComment(reviewDTO.getComment());
         review.setRental(rental);
@@ -77,7 +66,6 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<ReviewDTO> getAllReviews() {
-
         List<Review> reviews = reviewRepository.findAll();
         List<ReviewDTO> reviewDTOList = new ArrayList<>();
 
@@ -89,44 +77,37 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewDTO selectReview(Long reviewId) {
-
-        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
-
-        if (optionalReview.isEmpty()) {
-            throw new NotFoundException("Review not found");
+        if (reviewId == null) {
+            throw new ValidationException("Review ID is required");
         }
-        return mapToDTO(optionalReview.get());
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("Review not found with ID: " + reviewId));
+
+        return mapToDTO(review);
     }
 
     @Override
     @Transactional
     public void updateReview(ReviewDTO reviewDTO, String username) {
-
-        if (reviewDTO.getReviewId() == null) {
-            throw new RuntimeException("Review ID is required");
+        if (reviewDTO == null || reviewDTO.getReviewId() == null) {
+            throw new ValidationException("Review ID is required for update");
         }
 
-        Optional<Review> optionalReview = reviewRepository.findById(reviewDTO.getReviewId());
-        if (optionalReview.isEmpty()) {
-            throw new NotFoundException("Review not found");
+        validateReviewDTO(reviewDTO);
+
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username is required");
         }
 
-        Review review = optionalReview.get();
+        Review review = reviewRepository.findById(reviewDTO.getReviewId())
+                .orElseThrow(() -> new NotFoundException("Review not found"));
 
-        Optional<Customer> optionalCustomer = customerRepository.findCustomerByUsername(username);
-
-        if (optionalCustomer.isEmpty()) {
-            throw new NotFoundException("Customer not found");
-        }
-
-        Customer customer = optionalCustomer.get();
+        Customer customer = customerRepository.findCustomerByUsername(username.trim())
+                .orElseThrow(() -> new NotFoundException("Customer not found"));
 
         if (!review.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
-            throw new RuntimeException("You can only update your own review");
-        }
-
-        if (reviewDTO.getRating() == null || reviewDTO.getRating() < 1 || reviewDTO.getRating() > 5) {
-            throw new RuntimeException("Rating must be between 1 and 5");
+            throw new ValidationException("You can only update your own review");
         }
 
         review.setRating(reviewDTO.getRating());
@@ -138,37 +119,35 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public void deleteReview(Long reviewId, String username, String role) {
-
-        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
-
-        if (optionalReview.isEmpty()) {
-            throw new NotFoundException("Review not found");
+        if (reviewId == null) {
+            throw new ValidationException("Review ID is required");
         }
 
-        Review review = optionalReview.get();
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("Review not found"));
 
-        if (role.equals("ADMIN")) {
-            reviewRepository.deleteById(reviewId);
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            reviewRepository.delete(review);
             return;
         }
 
-        Optional<Customer> optionalCustomer = customerRepository.findCustomerByUsername(username);
-        if (optionalCustomer.isEmpty()) {
-            throw new NotFoundException("Customer not found");
-        }
-
-        Customer customer = optionalCustomer.get();
+        Customer customer = customerRepository.findCustomerByUsername(username)
+                .orElseThrow(() -> new NotFoundException("Customer not found"));
 
         if (!review.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
-            throw new RuntimeException("You can only delete your own review");
+            throw new ValidationException("You can only delete your own review");
         }
-        reviewRepository.deleteById(reviewId);
+
+        reviewRepository.delete(review);
     }
 
     @Override
     public List<ReviewDTO> getMyReviews(String username) {
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username is required");
+        }
 
-        List<Review> reviews = reviewRepository.findByCustomer_User_Username(username);
+        List<Review> reviews = reviewRepository.findByCustomer_User_Username(username.trim());
         List<ReviewDTO> reviewDTOList = new ArrayList<>();
 
         for (Review review : reviews) {
@@ -178,10 +157,20 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewDTOList;
     }
 
+    private void validateReviewDTO(ReviewDTO dto) {
+        if (dto == null) {
+            throw new ValidationException("Review data is required");
+        }
+        if (dto.getRating() == null || dto.getRating() < 1 || dto.getRating() > 5) {
+            throw new ValidationException("Rating must be between 1 and 5");
+        }
+        if (dto.getRentalId() == null) {
+            throw new ValidationException("Rental ID is required");
+        }
+    }
+
     private ReviewDTO mapToDTO(Review review) {
-
         ReviewDTO dto = new ReviewDTO();
-
         dto.setReviewId(review.getReviewId());
         dto.setRating(review.getRating());
         dto.setComment(review.getComment());

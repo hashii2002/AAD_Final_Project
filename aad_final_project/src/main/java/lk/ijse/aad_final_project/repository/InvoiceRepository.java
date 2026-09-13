@@ -16,4 +16,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice,Long> {
     List<Invoice> findInvoicesByCustomerUsername(@Param("username") String username);
 
     Optional<Invoice> findByRental_RentalId(Long rentalId);
+
+    boolean existsByRental_RentalId(Long rentalId);
 }

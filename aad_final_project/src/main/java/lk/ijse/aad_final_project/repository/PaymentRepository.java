@@ -14,4 +14,8 @@ public interface PaymentRepository extends JpaRepository<Payment,Long> {
     List<Payment> findPaymentsByCustomerUsername(@Param("username") String username);
 
     List<Payment> findByRental_RentalId(Long rentalId);
+
+    boolean existsByPaymentReference(String paymentReference);
+
+    boolean existsByPaymentReferenceAndPaymentIdNot(String paymentReference, Long paymentId);
 }
