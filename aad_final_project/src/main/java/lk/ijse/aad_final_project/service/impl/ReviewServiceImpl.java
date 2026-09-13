@@ -11,6 +11,7 @@ import lk.ijse.aad_final_project.repository.ReviewRepository;
 import lk.ijse.aad_final_project.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
@@ -25,6 +27,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final CustomerRepository customerRepository;
 
     @Override
+    @Transactional
     public void saveReview(ReviewDTO reviewDTO, String username) {
 
         if (reviewDTO.getRating() == null || reviewDTO.getRating() < 1 || reviewDTO.getRating() > 5) {
@@ -96,6 +99,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional
     public void updateReview(ReviewDTO reviewDTO, String username) {
 
         if (reviewDTO.getReviewId() == null) {
@@ -132,6 +136,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional
     public void deleteReview(Long reviewId, String username, String role) {
 
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);

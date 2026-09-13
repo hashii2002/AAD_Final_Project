@@ -7,6 +7,7 @@ import lk.ijse.aad_final_project.repository.VehicleCategoryRepository;
 import lk.ijse.aad_final_project.service.VehicleCategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +15,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class VehicleCategoryServiceImpl implements VehicleCategoryService {
 
     private final VehicleCategoryRepository vehicleCategoryRepository;
 
     @Override
+    @Transactional
     public void saveVehicleCategory(VehicleCategoryDTO vehicleCategoryDTO) {
         VehicleCategory vehicleCategory = new VehicleCategory();
 
@@ -68,6 +71,7 @@ public class VehicleCategoryServiceImpl implements VehicleCategoryService {
     }
 
     @Override
+    @Transactional
     public void updateVehicleCategory(VehicleCategoryDTO vehicleCategoryDTO) {
 
         Optional<VehicleCategory> optionalVehicleCategory = vehicleCategoryRepository.findById(vehicleCategoryDTO.getCategoryId());
@@ -84,6 +88,7 @@ public class VehicleCategoryServiceImpl implements VehicleCategoryService {
     }
 
     @Override
+    @Transactional
     public void deleteVehicleCategory(Long categoryId) {
         if (!vehicleCategoryRepository.existsById(categoryId)) {
             throw new NotFoundException("Vehicle category not found");

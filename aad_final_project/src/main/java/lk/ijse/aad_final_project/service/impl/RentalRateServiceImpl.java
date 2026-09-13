@@ -9,6 +9,7 @@ import lk.ijse.aad_final_project.repository.VehicleCategoryRepository;
 import lk.ijse.aad_final_project.service.RentalRateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +17,14 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RentalRateServiceImpl implements RentalRateService {
 
     private final RentalRateRepository rentalRateRepository;
     private final VehicleCategoryRepository vehicleCategoryRepository;
 
     @Override
+    @Transactional
     public void saveRentalRate(RentalRateDTO rentalRateDTO) {
         Optional<VehicleCategory> optionalCategory = vehicleCategoryRepository.findById(rentalRateDTO.getCategoryId());
         if (optionalCategory.isEmpty()) {
@@ -87,6 +90,7 @@ public class RentalRateServiceImpl implements RentalRateService {
     }
 
     @Override
+    @Transactional
     public void updateRentalRate(RentalRateDTO rentalRateDTO) {
         Optional<RentalRate> optionalRentalRate = rentalRateRepository.findById(rentalRateDTO.getRateId());
 
@@ -114,6 +118,7 @@ public class RentalRateServiceImpl implements RentalRateService {
     }
 
     @Override
+    @Transactional
     public void deleteRentalRate(Long rateId) {
 
         if (!rentalRateRepository.existsById(rateId)) {

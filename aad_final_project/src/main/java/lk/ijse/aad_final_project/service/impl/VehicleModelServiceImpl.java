@@ -9,6 +9,7 @@ import lk.ijse.aad_final_project.repository.VehicleModelRepository;
 import lk.ijse.aad_final_project.service.VehicleModelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +17,14 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class VehicleModelServiceImpl implements VehicleModelService {
 
     private final VehicleModelRepository vehicleModelRepository;
     private final VehicleBrandRepository vehicleBrandRepository;
 
     @Override
+    @Transactional
     public void saveVehicleModel(VehicleModelDTO vehicleModelDTO) {
         Optional<VehicleBrand> optionalBrand = vehicleBrandRepository.findById(vehicleModelDTO.getBrandId());
         if (optionalBrand.isEmpty()) {
@@ -87,6 +90,7 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     }
 
     @Override
+    @Transactional
     public void updateVehicleModel(VehicleModelDTO vehicleModelDTO) {
         Optional<VehicleModel> optionalVehicleModel = vehicleModelRepository.findById(vehicleModelDTO.getModelId());
         if (optionalVehicleModel.isEmpty()) {
@@ -113,6 +117,7 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     }
 
     @Override
+    @Transactional
     public void deleteVehicleModel(Long modelId) {
         if (!vehicleModelRepository.existsById(modelId)) {
             throw new NotFoundException("Vehicle model not found");

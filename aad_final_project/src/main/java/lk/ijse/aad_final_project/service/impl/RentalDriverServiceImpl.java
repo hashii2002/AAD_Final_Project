@@ -12,6 +12,7 @@ import lk.ijse.aad_final_project.repository.RentalRepository;
 import lk.ijse.aad_final_project.service.RentalDriverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RentalDriverServiceImpl implements RentalDriverService {
 
     private final RentalDriverRepository rentalDriverRepository;
@@ -26,6 +28,7 @@ public class RentalDriverServiceImpl implements RentalDriverService {
     private final DriverRepository driverRepository;
 
     @Override
+    @Transactional
     public void saveRentalDriver(RentalDriverDTO rentalDriverDTO) {
         Optional<Rental> optionalRental = rentalRepository.findById(rentalDriverDTO.getRentalId());
 
@@ -78,6 +81,7 @@ public class RentalDriverServiceImpl implements RentalDriverService {
     }
 
     @Override
+    @Transactional
     public void updateRentalDriver(RentalDriverDTO rentalDriverDTO) {
         Optional<RentalDriver> optionalRentalDriver = rentalDriverRepository.findById(rentalDriverDTO.getRentalDriverId());
 
@@ -109,6 +113,7 @@ public class RentalDriverServiceImpl implements RentalDriverService {
     }
 
     @Override
+    @Transactional
     public void deleteRentalDriver(Long rentalDriverId) {
         if (!rentalDriverRepository.existsById(rentalDriverId)) {
             throw new NotFoundException("Rental driver not found");

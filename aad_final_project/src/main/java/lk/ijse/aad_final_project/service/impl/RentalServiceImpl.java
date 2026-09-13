@@ -9,9 +9,8 @@ import lk.ijse.aad_final_project.exception.ValidationException;
 import lk.ijse.aad_final_project.repository.*;
 import lk.ijse.aad_final_project.service.RentalService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +18,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RentalServiceImpl implements RentalService {
 
     private final RentalRepository rentalRepository;
@@ -30,6 +30,7 @@ public class RentalServiceImpl implements RentalService {
     private final RentalDriverRepository rentalDriverRepository;
 
     @Override
+    @Transactional
     public void saveRental(RentalDTO rentalDTO) {
         Optional<Customer> optionalCustomer = customerRepository.findById(rentalDTO.getCustomerId());
         if (optionalCustomer.isEmpty()) {
@@ -174,6 +175,7 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
+    @Transactional
     public void updateRental(RentalDTO rentalDTO) {
         Optional<Rental> optionalRental = rentalRepository.findById(rentalDTO.getRentalId());
         if (optionalRental.isEmpty()) {
@@ -264,6 +266,7 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
+    @Transactional
     public void deleteRental(Long rentalId) {
 
         Optional<Rental> optionalRental = rentalRepository.findById(rentalId);

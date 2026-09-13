@@ -11,6 +11,7 @@ import lk.ijse.aad_final_project.repository.VehicleRepository;
 import lk.ijse.aad_final_project.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +19,14 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class VehicleServiceImpl implements VehicleService {
     private final VehicleRepository vehicleRepository;
     private final VehicleModelRepository vehicleModelRepository;
     private final VehicleCategoryRepository vehicleCategoryRepository;
 
     @Override
+    @Transactional
     public void saveVehicle(VehicleDTO vehicleDTO) {Optional<VehicleModel> optionalModel = vehicleModelRepository.findById(vehicleDTO.getModelId());
 
         if (optionalModel.isEmpty()) {
@@ -48,8 +51,6 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setCategory(vehicleCategory);
 
         vehicleRepository.save(vehicle);
-
-
     }
 
     @Override
@@ -99,6 +100,7 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
+    @Transactional
     public void updateVehicle(VehicleDTO vehicleDTO) {
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleDTO.getVehicleId());
         if (optionalVehicle.isEmpty()) {
@@ -132,6 +134,7 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
+    @Transactional
     public void deleteVehicle(Long vehicleId) {
         if (!vehicleRepository.existsById(vehicleId)) {
             throw new NotFoundException("Vehicle not found");

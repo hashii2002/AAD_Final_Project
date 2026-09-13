@@ -14,6 +14,7 @@ import lk.ijse.aad_final_project.repository.VehicleRepository;
 import lk.ijse.aad_final_project.service.VehicleInspectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     private final VehicleInspectionRepository vehicleInspectionRepository;
     private final VehicleRepository vehicleRepository;
@@ -29,6 +31,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public void saveVehicleInspection(VehicleInspectionDTO vehicleInspectionDTO) {
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleInspectionDTO.getVehicleId());
         if (optionalVehicle.isEmpty()) {
@@ -119,6 +122,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     }
 
     @Override
+    @Transactional
     public void updateVehicleInspection(VehicleInspectionDTO vehicleInspectionDTO) {
         Optional<VehicleInspection> optionalInspection = vehicleInspectionRepository.findById(vehicleInspectionDTO.getInspectionId());
         if (optionalInspection.isEmpty()) {
@@ -169,6 +173,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     }
 
     @Override
+    @Transactional
     public void deleteVehicleInspection(Long inspectionId) {
 
         if (!vehicleInspectionRepository.existsById(inspectionId)) {

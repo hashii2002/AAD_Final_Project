@@ -7,6 +7,7 @@ import lk.ijse.aad_final_project.repository.RoleRepository;
 import lk.ijse.aad_final_project.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +15,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
 
     @Override
+    @Transactional
     public void saveRole(RoleDTO roleDTO) {
         Role role = new Role();
         role.setRoleName(roleDTO.getRoleName());
@@ -63,6 +66,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public void updateRole(RoleDTO roleDTO) {
         Optional<Role> optionalRole =
                 roleRepository.findById(roleDTO.getRoleId());
@@ -80,6 +84,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public void deleteRole(Long roleId) {
 
         if (!roleRepository.existsById(roleId)) {

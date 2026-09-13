@@ -7,6 +7,7 @@ import lk.ijse.aad_final_project.repository.VehicleBrandRepository;
 import lk.ijse.aad_final_project.service.VehicleBrandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +15,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class VehicleBrandServiceImpl implements VehicleBrandService {
 
     private final VehicleBrandRepository vehicleBrandRepository;
 
     @Override
+    @Transactional
     public void saveVehicleBrand(VehicleBrandDTO vehicleBrandDTO) {
         VehicleBrand vehicleBrand = new VehicleBrand();
 
@@ -69,6 +72,7 @@ public class VehicleBrandServiceImpl implements VehicleBrandService {
     }
 
     @Override
+    @Transactional
     public void updateVehicleBrand(VehicleBrandDTO vehicleBrandDTO) {
         Optional<VehicleBrand> optionalVehicleBrand = vehicleBrandRepository.findById(vehicleBrandDTO.getBrandId());
 
@@ -86,6 +90,7 @@ public class VehicleBrandServiceImpl implements VehicleBrandService {
     }
 
     @Override
+    @Transactional
     public void deleteVehicleBrand(Long brandId) {
         if (!vehicleBrandRepository.existsById(brandId)) {
             throw new NotFoundException("Vehicle brand not found");

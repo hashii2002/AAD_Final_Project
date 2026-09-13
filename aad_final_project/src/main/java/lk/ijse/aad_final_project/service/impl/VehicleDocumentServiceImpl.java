@@ -9,6 +9,7 @@ import lk.ijse.aad_final_project.repository.VehicleRepository;
 import lk.ijse.aad_final_project.service.VehicleDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,11 +17,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class VehicleDocumentServiceImpl implements VehicleDocumentService {
     private final VehicleDocumentRepository vehicleDocumentRepository;
     private final VehicleRepository vehicleRepository;
 
     @Override
+    @Transactional
     public void saveVehicleDocument(VehicleDocumentDTO vehicleDocumentDTO) {
         Optional<Vehicle> optionalVehicle = vehicleRepository.findById(vehicleDocumentDTO.getVehicleId());
 
@@ -90,6 +93,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
     }
 
     @Override
+    @Transactional
     public void updateVehicleDocument(VehicleDocumentDTO vehicleDocumentDTO) {
 
         Optional<VehicleDocument> optionalVehicleDocument = vehicleDocumentRepository.findById(vehicleDocumentDTO.getDocumentId());
@@ -108,6 +112,7 @@ public class VehicleDocumentServiceImpl implements VehicleDocumentService {
     }
 
     @Override
+    @Transactional
     public void deleteVehicleDocument(Long documentId) {
 
         if (!vehicleDocumentRepository.existsById(documentId)) {
