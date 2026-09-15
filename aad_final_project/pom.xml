@@ -136,10 +136,10 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Spring AI Dependency -->
+        <!-- Ollama Dependency for AI ChatBot -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-openai</artifactId>
+            <artifactId>spring-ai-starter-model-ollama</artifactId>
         </dependency>
 	</dependencies>
 
