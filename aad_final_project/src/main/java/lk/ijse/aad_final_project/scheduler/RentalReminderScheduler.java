@@ -26,6 +26,7 @@ public class RentalReminderScheduler {
     private final EmailService emailService;
 
     @Scheduled(cron = "0 0 9 * * *", zone = "Asia/Colombo")
+    //@Scheduled(cron = "*/10 * * * * *", zone = "Asia/Colombo")
     @Transactional(readOnly = true)
     public void sendRentalReminderEmails() {
 
