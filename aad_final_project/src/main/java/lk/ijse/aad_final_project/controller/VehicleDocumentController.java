@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.controller;
 import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.VehicleDocumentDTO;
+import lk.ijse.aad_final_project.service.VehicleDocumentExpiryService;
 import lk.ijse.aad_final_project.service.VehicleDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import java.util.List;
 public class VehicleDocumentController {
 
     private final VehicleDocumentService vehicleDocumentService;
+    private final VehicleDocumentExpiryService vehicleDocumentExpiryService;
 
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> saveVehicleDocument(@Valid @RequestBody VehicleDocumentDTO vehicleDocumentDTO) {
@@ -56,6 +58,14 @@ public class VehicleDocumentController {
     public ResponseEntity<CommonResponse> deleteVehicleDocument(@PathVariable Long documentId) {
         vehicleDocumentService.deleteVehicleDocument(documentId);
         CommonResponse response = new CommonResponse(0, "Vehicle Document Deleted Successfully");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping(value = "/expiry-alerts", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommonResponse> getExpiryAlerts() {
+        List<VehicleDocumentDTO> alerts = vehicleDocumentExpiryService.getExpiringDocuments();
+        CommonResponse response = new CommonResponse(0, alerts, "Vehicle Document Expiry Alerts Retrieved Successfully");
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

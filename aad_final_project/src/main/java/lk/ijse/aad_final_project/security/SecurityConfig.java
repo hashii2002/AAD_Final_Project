@@ -160,6 +160,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/ai/chat").permitAll()
                         //.requestMatchers(HttpMethod.POST, "/v1/ai/chat").hasAnyRole("CUSTOMER", "ADMIN", "FLEET_MANAGER")
 
+                        // Notification
+                        .requestMatchers("/v1/vehicleDocument/**").hasAnyRole("ADMIN", "FLEET_MANAGER")
+
                         .anyRequest().authenticated()
 
                 )
