@@ -30,40 +30,17 @@ public class VehicleDocumentExpiryServiceImpl
     public void checkDocumentExpiry() {
 
         LocalDate today = LocalDate.now();
-
         LocalDate alertDate = today.plusDays(7);
 
-
-        List<VehicleDocument> documents =
-                vehicleDocumentRepository.findDocumentsExpiringSoon(
-                        today,
-                        alertDate
-                );
-
-
+        List<VehicleDocument> documents = vehicleDocumentRepository.findDocumentsExpiringSoon(today, alertDate);
         if (documents.isEmpty()) {
-
-            log.info(
-                    "Vehicle document expiry check completed. No documents expiring within 7 days."
-            );
-
+            log.info("Vehicle document expiry check completed. No documents expiring within 7 days.");
             return;
         }
 
-
         for (VehicleDocument document : documents) {
-
-            long remainingDays =
-                    ChronoUnit.DAYS.between(
-                            today,
-                            document.getExpiryDate()
-                    );
-
-
-            log.warn(
-                    "Vehicle document expiry alert: " +
-                            "Document ID={}, Vehicle ID={}, Document Type={}, " +
-                            "Expiry Date={}, Remaining Days={}",
+            long remainingDays = ChronoUnit.DAYS.between(today, document.getExpiryDate());
+            log.warn("Vehicle document expiry alert: " + "Document ID={}, Vehicle ID={}, Document Type={}, " + "Expiry Date={}, Remaining Days={}",
                     document.getDocumentId(),
                     document.getVehicle().getVehicleId(),
                     document.getDocumentType(),
@@ -72,69 +49,28 @@ public class VehicleDocumentExpiryServiceImpl
             );
         }
 
-
-        log.info(
-                "{} vehicle document(s) are expiring within 7 days.",
-                documents.size()
-        );
+        log.info("{} vehicle document(s) are expiring within 7 days.", documents.size());
     }
 
-
-    /*
-     * Returns documents that are currently within
-     * the 7-day expiry warning period.
-     */
     @Override
     public List<VehicleDocumentDTO> getExpiringDocuments() {
 
         LocalDate today = LocalDate.now();
-
         LocalDate alertDate = today.plusDays(7);
 
-
-        List<VehicleDocument> documents =
-                vehicleDocumentRepository.findDocumentsExpiringSoon(
-                        today,
-                        alertDate
-                );
-
-
-        List<VehicleDocumentDTO> dtoList =
-                new ArrayList<>();
-
+        List<VehicleDocument> documents = vehicleDocumentRepository.findDocumentsExpiringSoon(today, alertDate);
+        List<VehicleDocumentDTO> dtoList = new ArrayList<>();
 
         for (VehicleDocument document : documents) {
 
-            VehicleDocumentDTO dto =
-                    new VehicleDocumentDTO();
-
-            dto.setDocumentId(
-                    document.getDocumentId()
-            );
-
-            dto.setVehicleId(
-                    document.getVehicle().getVehicleId()
-            );
-
-            dto.setDocumentType(
-                    document.getDocumentType()
-            );
-
-            dto.setDocumentNumber(
-                    document.getDocumentNumber()
-            );
-
-            dto.setIssueDate(
-                    document.getIssueDate()
-            );
-
-            dto.setExpiryDate(
-                    document.getExpiryDate()
-            );
-
-            dto.setStatus(
-                    document.getStatus()
-            );
+            VehicleDocumentDTO dto = new VehicleDocumentDTO();
+            dto.setDocumentId(document.getDocumentId());
+            dto.setVehicleId(document.getVehicle().getVehicleId());
+            dto.setDocumentType(document.getDocumentType());
+            dto.setDocumentNumber(document.getDocumentNumber());
+            dto.setIssueDate(document.getIssueDate());
+            dto.setExpiryDate(document.getExpiryDate());
+            dto.setStatus(document.getStatus());
 
             dtoList.add(dto);
         }
