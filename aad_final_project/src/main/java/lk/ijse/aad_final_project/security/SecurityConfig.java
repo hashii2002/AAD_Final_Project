@@ -51,6 +51,8 @@ public class SecurityConfig {
                         // Create User API - temporary for initial user creation
                         .requestMatchers(HttpMethod.POST, "/v1/user/save").hasRole("ADMIN")
 
+                        // User APIs
+                        .requestMatchers(HttpMethod.GET, "/v1/user/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
                         .requestMatchers("/v1/user/**").hasRole("ADMIN")
 
                         // Register Customer APIs
