@@ -5,12 +5,14 @@ import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.AuthDTO;
 import lk.ijse.aad_final_project.dto.UserDTO;
 import lk.ijse.aad_final_project.dto.UserDataDTO;
+import lk.ijse.aad_final_project.dto.UserProfileUpdateDTO;
 import lk.ijse.aad_final_project.security.JwtUtil;
 import lk.ijse.aad_final_project.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -74,6 +76,15 @@ public class UserController {
     public ResponseEntity<CommonResponse> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
         CommonResponse response = new CommonResponse(0, "User Deactivated Successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PatchMapping(value = "/profile", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommonResponse> updateMyProfile(@Valid @RequestBody UserProfileUpdateDTO dto, Authentication authentication) {
+        String currentUsername = authentication.getName();
+        userService.updateMyProfile(dto, currentUsername);
+        CommonResponse response = new CommonResponse(0, "Profile Updated Successfully");
+
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

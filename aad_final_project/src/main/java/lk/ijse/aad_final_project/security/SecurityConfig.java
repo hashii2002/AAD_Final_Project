@@ -53,6 +53,7 @@ public class SecurityConfig {
 
                         // User APIs
                         .requestMatchers(HttpMethod.GET, "/v1/user/all").hasAnyRole("ADMIN", "FLEET_MANAGER")
+                        .requestMatchers(HttpMethod.PATCH, "/v1/user/profile").hasRole("CUSTOMER")
                         .requestMatchers("/v1/user/**").hasRole("ADMIN")
 
                         // Register Customer APIs

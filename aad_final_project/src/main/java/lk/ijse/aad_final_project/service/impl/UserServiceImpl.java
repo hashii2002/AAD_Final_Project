@@ -1,6 +1,7 @@
 package lk.ijse.aad_final_project.service.impl;
 
 import lk.ijse.aad_final_project.dto.UserDTO;
+import lk.ijse.aad_final_project.dto.UserProfileUpdateDTO;
 import lk.ijse.aad_final_project.entity.Role;
 import lk.ijse.aad_final_project.entity.User;
 import lk.ijse.aad_final_project.enums.UserStatus;
@@ -311,5 +312,70 @@ public class UserServiceImpl implements UserService {
         }
 
         return userDTO;
+    }
+
+    @Override
+    @Transactional
+    public void updateMyProfile(UserProfileUpdateDTO dto, String currentUsername) {
+
+        if (dto == null) {
+            throw new ValidationException("Profile data is required");
+        }
+
+        if (currentUsername == null || currentUsername.isBlank()) {
+            throw new ValidationException("Authenticated user is required");
+        }
+
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() ->
+                        new NotFoundException("User not found"));
+
+        String username = dto.getUsername().trim();
+        String email = dto.getEmail().trim().toLowerCase();
+        String firstName = dto.getFirstName().trim();
+        String lastName = dto.getLastName().trim();
+        String phone = dto.getPhone().trim();
+
+        if (username.isBlank()) {
+            throw new ValidationException("Username is required");
+        }
+
+        if (email.isBlank()) {
+            throw new ValidationException("Email is required");
+        }
+
+        if (firstName.isBlank()) {
+            throw new ValidationException("First name is required");
+        }
+
+        if (lastName.isBlank()) {
+            throw new ValidationException("Last name is required");
+        }
+
+        if (phone.isBlank()) {
+            throw new ValidationException("Phone number is required");
+        }
+
+        if (userRepository.existsByUsernameAndUserIdNot(
+                username,
+                user.getUserId())) {
+
+            throw new DuplicateException("Username already exists");
+        }
+
+        if (userRepository.existsByEmailAndUserIdNot(
+                email,
+                user.getUserId())) {
+
+            throw new DuplicateException("Email already exists");
+        }
+
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setPhone(phone);
+
+        userRepository.save(user);
     }
 }

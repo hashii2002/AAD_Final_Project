@@ -1,6 +1,7 @@
 package lk.ijse.aad_final_project.service.impl;
 
 import lk.ijse.aad_final_project.dto.CustomerDTO;
+import lk.ijse.aad_final_project.dto.CustomerProfileDTO;
 import lk.ijse.aad_final_project.dto.CustomerRegisterDTO;
 import lk.ijse.aad_final_project.entity.Customer;
 import lk.ijse.aad_final_project.entity.Role;
@@ -376,5 +377,31 @@ public class CustomerServiceImpl implements CustomerService {
         customerDTO.setDrivingLicenseNumber(customer.getDrivingLicenseNumber());
 
         return customerDTO;
+    }
+
+    @Override
+    public CustomerProfileDTO getMyProfile(String username) {
+
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username is required");
+        }
+
+        Customer customer = customerRepository.findCustomerByUsername(username).orElseThrow(() -> new NotFoundException("Customer profile not found"));
+        User user = customer.getUser();
+
+        CustomerProfileDTO profileDTO = new CustomerProfileDTO();
+        profileDTO.setCustomerId(customer.getCustomerId());
+        profileDTO.setUserId(user.getUserId());
+        profileDTO.setUsername(user.getUsername());
+        profileDTO.setEmail(user.getEmail());
+        profileDTO.setFirstName(user.getFirstName());
+        profileDTO.setLastName(user.getLastName());
+        profileDTO.setPhone(user.getPhone());
+        profileDTO.setNic(customer.getNic());
+        profileDTO.setAddress(customer.getAddress());
+        profileDTO.setDrivingLicenseNumber(customer.getDrivingLicenseNumber());
+        profileDTO.setStatus(user.getStatus());
+
+        return profileDTO;
     }
 }

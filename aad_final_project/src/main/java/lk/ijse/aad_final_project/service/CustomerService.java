@@ -1,8 +1,8 @@
 package lk.ijse.aad_final_project.service;
 
 import lk.ijse.aad_final_project.dto.CustomerDTO;
+import lk.ijse.aad_final_project.dto.CustomerProfileDTO;
 import lk.ijse.aad_final_project.dto.CustomerRegisterDTO;
-
 import java.util.List;
 
 public interface CustomerService {
@@ -22,4 +22,6 @@ public interface CustomerService {
     CustomerDTO getCustomerByUsername(String username);
 
     void registerCustomer(CustomerRegisterDTO dto);
+
+    CustomerProfileDTO getMyProfile(String username);
 }

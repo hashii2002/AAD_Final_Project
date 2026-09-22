@@ -3,6 +3,7 @@ package lk.ijse.aad_final_project.controller;
 import jakarta.validation.Valid;
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.CustomerDTO;
+import lk.ijse.aad_final_project.dto.CustomerProfileDTO;
 import lk.ijse.aad_final_project.dto.CustomerRegisterDTO;
 import lk.ijse.aad_final_project.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -87,5 +88,26 @@ public class CustomerController {
         customerService.registerCustomer(customerRegisterDTO);
         CommonResponse response = new CommonResponse(0, "Customer Registered Successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping(
+            value = "/me/profile",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<CommonResponse> getMyOwnProfile(
+            Authentication authentication) {
+
+        String username = authentication.getName();
+
+        CustomerProfileDTO profileDTO =
+                customerService.getMyProfile(username);
+
+        CommonResponse response = new CommonResponse(
+                0,
+                profileDTO,
+                "Customer Profile Retrieved Successfully"
+        );
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
