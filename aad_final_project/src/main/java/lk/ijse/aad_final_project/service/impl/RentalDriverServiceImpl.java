@@ -15,6 +15,7 @@ import lk.ijse.aad_final_project.service.RentalDriverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lk.ijse.aad_final_project.dto.VehicleInfoDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -192,7 +193,9 @@ public class RentalDriverServiceImpl implements RentalDriverService {
     }
 
     private RentalDTO mapToRentalDTO(Rental rental) {
+
         RentalDTO dto = new RentalDTO();
+
         dto.setRentalId(rental.getRentalId());
         dto.setStartDate(rental.getStartDate());
         dto.setEndDate(rental.getEndDate());
@@ -207,19 +210,46 @@ public class RentalDriverServiceImpl implements RentalDriverService {
         if (rental.getCustomer() != null) {
             dto.setCustomerId(rental.getCustomer().getCustomerId());
         }
+
         if (rental.getVehicle() != null) {
+
             dto.setVehicleId(rental.getVehicle().getVehicleId());
+            VehicleInfoDTO vehicleInfoDTO = new VehicleInfoDTO();
+
+            vehicleInfoDTO.setVehicleId(rental.getVehicle().getVehicleId());
+            vehicleInfoDTO.setVehicleNo(rental.getVehicle().getVehicleNo());
+            vehicleInfoDTO.setColor(rental.getVehicle().getColor());
+            vehicleInfoDTO.setYear(rental.getVehicle().getYear());
+
+            if (rental.getVehicle().getModel() != null) {
+
+                vehicleInfoDTO.setModelName(rental.getVehicle().getModel().getModelName());
+                vehicleInfoDTO.setFuelType(rental.getVehicle().getModel().getFuelType() != null ? rental.getVehicle().getModel().getFuelType().name() : null);
+                vehicleInfoDTO.setSeatingCapacity(rental.getVehicle().getModel().getSeatingCapacity());
+                vehicleInfoDTO.setTransmissionType(rental.getVehicle().getModel().getTransmissionType() != null ? rental.getVehicle().getModel().getTransmissionType().name() : null);
+
+                if (rental.getVehicle().getModel().getBrand() != null) {
+                    vehicleInfoDTO.setBrandName(rental.getVehicle().getModel().getBrand().getBrandName());
+                }
+            }
+
+            if (rental.getVehicle().getCategory() != null) {
+                vehicleInfoDTO.setCategoryName(rental.getVehicle().getCategory().getCategory() != null ? rental.getVehicle().getCategory().getCategory().name() : null);
+            }
+            dto.setVehicle(vehicleInfoDTO);
         }
+
         if (rental.getRentalRate() != null) {
             dto.setRentalRateId(rental.getRentalRate().getRateId());
         }
+
         if (rental.getRentalDrivers() != null && !rental.getRentalDrivers().isEmpty()) {
             RentalDriver firstRentalDriver = rental.getRentalDrivers().get(0);
+
             if (firstRentalDriver != null && firstRentalDriver.getDriver() != null) {
                 dto.setDriverId(firstRentalDriver.getDriver().getDriverId());
             }
         }
-
         return dto;
     }
 }

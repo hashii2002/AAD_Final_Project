@@ -12,7 +12,15 @@ import java.util.List;
 @Repository
 public interface RentalDriverRepository extends JpaRepository<RentalDriver,Long> {
 
-    @Query("SELECT rd.rental FROM RentalDriver rd WHERE rd.driver.user.username = :username")
+    @Query("""
+        SELECT DISTINCT rd.rental
+        FROM RentalDriver rd
+        JOIN FETCH rd.rental.vehicle v
+        JOIN FETCH v.model m
+        JOIN FETCH m.brand b
+        JOIN FETCH v.category c
+        WHERE rd.driver.user.username = :username
+        """)
     List<Rental> findRentalsByDriverUsername(@Param("username") String username);
 
     List<RentalDriver> findByRental_RentalId(Long rentalId);

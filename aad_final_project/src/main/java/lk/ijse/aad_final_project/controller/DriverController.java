@@ -2,6 +2,7 @@ package lk.ijse.aad_final_project.controller;
 
 import lk.ijse.aad_final_project.constant.CommonResponse;
 import lk.ijse.aad_final_project.dto.DriverDTO;
+import lk.ijse.aad_final_project.dto.DriverProfileDTO;
 import lk.ijse.aad_final_project.service.DriverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -56,8 +57,8 @@ public class DriverController {
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> getMyProfile(Authentication authentication) {
         String username = authentication.getName();
-        DriverDTO driverDTO = driverService.getDriverByUsername(username);
-        CommonResponse response = new CommonResponse(0, driverDTO, "Driver Profile Retrieved Successfully");
+        DriverProfileDTO driverProfileDTO = driverService.getDriverProfile(username);
+        CommonResponse response = new CommonResponse(0, driverProfileDTO, "Driver Profile Retrieved Successfully");
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

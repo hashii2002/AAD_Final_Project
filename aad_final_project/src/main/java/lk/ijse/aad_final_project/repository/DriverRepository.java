@@ -22,4 +22,15 @@ public interface DriverRepository extends JpaRepository<Driver,Long> {
 
     @Query("SELECT COUNT(d) > 0 FROM Driver d WHERE d.user.userId = :userId AND d.driverId <> :driverId")
     boolean existsByUserIdAndDriverIdNot(@Param("userId") Long userId, @Param("driverId") Long driverId);
+
+  // Driver user details query
+    @Query("""
+            SELECT d
+            FROM Driver d
+            JOIN FETCH d.user u
+            WHERE u.username = :username
+            """)
+    Optional<Driver> findDriverWithUserByUsername(
+            @Param("username") String username
+    );
 }

@@ -12,6 +12,7 @@ import lk.ijse.aad_final_project.service.DriverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lk.ijse.aad_final_project.dto.DriverProfileDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -197,5 +198,44 @@ public class DriverServiceImpl implements DriverService {
         driverDTO.setStatus(driver.getStatus());
 
         return driverDTO;
+    }
+
+    @Override
+    public DriverProfileDTO getDriverProfile(String username) {
+
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username is required");
+        }
+
+        Driver driver = driverRepository
+                .findDriverWithUserByUsername(username.trim())
+                .orElseThrow(() ->
+                        new NotFoundException(
+                                "Driver profile not found for the given username"
+                        )
+                );
+
+        DriverProfileDTO dto = new DriverProfileDTO();
+
+        dto.setDriverId(driver.getDriverId());
+
+        dto.setLicenseNo(driver.getLicenseNo());
+
+        dto.setDriverStatus(driver.getStatus());
+
+        if (driver.getUser() != null) {
+
+            User user = driver.getUser();
+
+            dto.setUserId(user.getUserId());
+            dto.setUsername(user.getUsername());
+            dto.setEmail(user.getEmail());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setPhone(user.getPhone());
+            dto.setUserStatus(user.getStatus());
+        }
+
+        return dto;
     }
 }

@@ -41,4 +41,6 @@ public class RentalDTO {
 
     private DriverOption driverOption;
     private Long driverId;
+
+    private VehicleInfoDTO vehicle;
 }
