@@ -27,4 +27,15 @@ public interface VehicleRepository extends JpaRepository<Vehicle,Long> {
             WHERE v.status = lk.ijse.aad_final_project.enums.VehicleStatus.AVAILABLE
             """)
     List<Vehicle> findAvailableVehicles();
+
+    // All vehicles -  AI Assistant
+    @Query("""
+            SELECT DISTINCT v
+            FROM Vehicle v
+            JOIN FETCH v.model m
+            JOIN FETCH m.brand
+            JOIN FETCH v.category
+            ORDER BY v.vehicleId
+            """)
+    List<Vehicle> findAllVehiclesForAi();
 }

@@ -10,16 +10,28 @@ import lombok.NoArgsConstructor;
 public class AiVehicleInfoDTO {
 
     private Long vehicleId;
+
     private String vehicleNo;
+
     private String color;
+
     private Integer year;
+
     private String status;
 
     private String modelName;
+
     private String brandName;
+
     private String categoryName;
 
-    private Double dailyRate;
-    private Double monthlyRate;
+    private String fuelType;
 
+    private Integer seatingCapacity;
+
+    private String transmission;
+
+    private Double dailyRate;
+
+    private Double monthlyRate;
 }
